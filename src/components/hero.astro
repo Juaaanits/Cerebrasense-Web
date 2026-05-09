@@ -1,0 +1,101 @@
+---
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import Link from "@/components/ui/link.astro";
+import { Icon } from "astro-icon/components";
+
+const splashImage = "/mobile-splash.png";
+const libraryImage = "/mobile-library.png";
+const splashImageExists = existsSync(fileURLToPath(new URL("../../public/mobile-splash.png", import.meta.url)));
+const libraryImageExists = existsSync(fileURLToPath(new URL("../../public/mobile-library.png", import.meta.url)));
+---
+
+<main
+  class="grid lg:grid-cols-2 place-items-center pt-16 pb-8 md:pt-12 md:pb-24">
+  <div class="py-6 md:order-1 hidden md:block">
+    <div class="relative mx-auto flex items-end justify-center gap-6 xl:gap-8">
+      <div class="relative h-[520px] w-[250px] rounded-[2.8rem] border-[7px] border-white bg-neutral-950 p-3 shadow-2xl">
+        <div class="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-full bg-neutral-900"></div>
+        {
+          splashImageExists ? (
+            <img
+              src={splashImage}
+              alt="Mobile app splash screen"
+              class="h-full w-full rounded-[2.2rem] object-cover" />
+          ) : (
+            <div class="flex h-full items-center justify-center rounded-[2.2rem] border-2 border-dashed border-white/15 bg-[linear-gradient(180deg,_#0f172a_0%,_#312e81_100%)] p-8 text-center">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
+                  Splash Screen
+                </p>
+                <p class="mt-4 text-lg font-medium text-white">Empty image container</p>
+                <p class="mt-2 text-sm leading-6 text-white/60">
+                  Add <span class="font-semibold text-white">public/mobile-splash.png</span>
+                  and it will appear here automatically.
+                </p>
+              </div>
+            </div>
+          )
+        }
+      </div>
+
+      <div class="relative h-[520px] w-[250px] rounded-[2.8rem] border-[7px] border-white bg-neutral-950 p-3 shadow-2xl">
+        <div class="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-full bg-neutral-900"></div>
+        {
+          libraryImageExists ? (
+            <img
+              src={libraryImage}
+              alt="Mobile app repository screen"
+              class="h-full w-full rounded-[2.2rem] object-cover" />
+          ) : (
+            <div class="flex h-full items-center justify-center rounded-[2.2rem] border-2 border-dashed border-white/15 bg-black p-8 text-center">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
+                  Repository Screen
+                </p>
+                <p class="mt-4 text-lg font-medium text-white">Empty image container</p>
+                <p class="mt-2 text-sm leading-6 text-white/60">
+                  Add <span class="font-semibold text-white">public/mobile-library.png</span>
+                  and it will appear here automatically.
+                </p>
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+  <div>
+    <h1 class="text-5xl lg:text-6xl xl:text-7xl font-bold lg:tracking-tight xl:tracking-tighter">
+      Intelligent MRI Analysis, Powered by CerebraSense
+    </h1>
+    <p class="text-lg mt-4 text-slate-600 max-w-xl">
+      Automated, internally validated classification of gliomas, meningiomas, and 
+      pituitary tumors. CerebraSense leverages a custom-built CNN architecture 
+      optimized for accuracy and site-generalization, providing a robust baseline 
+      for next-generation diagnostic support.
+    </p>
+    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+      <Link
+        href="#"
+        href="https://web3templates.com/templates/astroship-starter-website-template-for-astro"
+        target="_blank"
+        class="flex gap-1 items-center justify-center"
+        rel="noopener">
+        <Icon class="text-white w-5 h-5" name="bx:bxs-cloud-download" />
+
+        Download for Free
+      </Link>
+      <Link
+        size="lg"
+        style="outline"
+        rel="noopener"
+        href="https://github.com/surjithctly/astroship"
+        class="flex gap-1 items-center justify-center"
+        target="_blank">
+        <Icon class="text-black w-4 h-4" name="bx:bxl-github" />
+        GitHub Repo
+      </Link>
+    </div>
+  </div>
+</main>

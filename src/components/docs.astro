@@ -1,0 +1,676 @@
+---
+import Container from "@/components/container.astro";
+import Sectionhead from "@/components/sectionhead.astro";
+---
+
+<Container>
+  <Sectionhead>
+    <Fragment slot="title">Development Overview</Fragment>
+    <Fragment slot="desc">
+      A deeper look into how CerebraSense was built.
+    </Fragment>
+  </Sectionhead>
+
+  <article class="development-content mx-auto mt-16 max-w-4xl">
+    <section>
+      <p>
+        The development of CerebraSense was grounded in a practical research
+        objective: to build a lightweight deep learning system capable of
+        classifying brain MRI scans into tumor-related categories. The system
+        was designed around accuracy, controlled experimentation, and future
+        deployment readiness.
+      </p>
+      <p>
+        The notebook began with a structured comparison of manually implemented
+        neural network scenarios using NumPy. These experiments tested how
+        architecture depth, hidden-layer width, regularization, optimizer
+        choice, activation function, and class-sensitive training affected MRI
+        classification performance. After the dense-network experiments, the
+        development moved toward a custom convolutional neural network because
+        MRI images contain spatial patterns that are better captured through
+        convolutional feature extraction.
+      </p>
+      <p>
+        The final selected model is a custom CNN trained from scratch. It does
+        not rely on a pre-trained architecture. Instead, the model uses three
+        convolutional blocks, a compact fully connected classifier, label
+        smoothing, early stopping, and learning-rate scheduling to balance
+        performance and generalization.
+      </p>
+    </section>
+
+    <section>
+      <h2>Dataset & Preprocessing</h2>
+      <p>
+        The notebook uses the Brain Tumor MRI Dataset by Masoud Nickparvar from
+        Kaggle. The dataset supports multi-class brain MRI classification and
+        is organized into four classes: glioma, meningioma, no tumor, and
+        pituitary tumor.
+      </p>
+      <p>
+        In the current implementation, the dataset is stored in separate
+        training and testing folders. The training folder is converted into
+        <code>brain_tumor_train.csv</code>, while the testing folder is
+        converted into <code>brain_tumor_test.csv</code>. Each image is
+        processed with the same conversion pipeline before model training.
+      </p>
+      <p>During preprocessing, each MRI image is:</p>
+      <ul>
+        <li>Loaded from its class folder.</li>
+        <li>Converted to grayscale using a single intensity channel.</li>
+        <li>Resized to 32 x 32 pixels.</li>
+        <li>Flattened into 1,024 pixel features.</li>
+        <li>Stored in CSV format with the class label as the first column.</li>
+      </ul>
+      <p>The class label mapping used in the notebook is:</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="numeric">Label</th>
+              <th>Class</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="numeric">0</td>
+              <td>Glioma</td>
+            </tr>
+            <tr>
+              <td class="numeric">1</td>
+              <td>Meningioma</td>
+            </tr>
+            <tr>
+              <td class="numeric">2</td>
+              <td>No Tumor</td>
+            </tr>
+            <tr>
+              <td class="numeric">3</td>
+              <td>Pituitary</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        For the final CNN, the flattened pixel values are standardized using
+        <code>StandardScaler</code>. The scaled vectors are then reshaped back
+        into image tensors with shape <code>1 x 32 x 32</code> so that the CNN
+        can learn spatial features from the MRI scans.
+      </p>
+
+      <h3>Dataset Class Distribution</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th class="numeric">Training Images</th>
+              <th class="numeric">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Glioma</td>
+              <td class="numeric">1,321</td>
+              <td class="numeric">23.1%</td>
+            </tr>
+            <tr>
+              <td>Meningioma</td>
+              <td class="numeric">1,339</td>
+              <td class="numeric">23.4%</td>
+            </tr>
+            <tr>
+              <td>No Tumor</td>
+              <td class="numeric">1,595</td>
+              <td class="numeric">27.9%</td>
+            </tr>
+            <tr>
+              <td>Pituitary</td>
+              <td class="numeric">1,457</td>
+              <td class="numeric">25.5%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Total: 5,712 training images</p>
+
+      <h3>Training vs Testing Split</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Split</th>
+              <th class="numeric">Images</th>
+              <th class="numeric">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Training</td>
+              <td class="numeric">5,712</td>
+              <td class="numeric">81.3%</td>
+            </tr>
+            <tr>
+              <td>Testing</td>
+              <td class="numeric">1,311</td>
+              <td class="numeric">18.7%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Total Dataset: 7,023 MRI images</p>
+
+      <p>
+        The final model also creates a stratified validation split from the
+        training CSV. This reserves 20% of the training data for validation
+        while preserving the original class proportions.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Internal Split</th>
+              <th class="numeric">Images</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Training Subset</td>
+              <td class="numeric">4,569</td>
+            </tr>
+            <tr>
+              <td>Validation Subset</td>
+              <td class="numeric">1,143</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Dataset Balance Analysis</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Measure</th>
+              <th class="numeric">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Largest Training Class</td>
+              <td class="numeric">1,595 images</td>
+            </tr>
+            <tr>
+              <td>Smallest Training Class</td>
+              <td class="numeric">1,321 images</td>
+            </tr>
+            <tr>
+              <td>Imbalance Ratio</td>
+              <td class="numeric">1.21</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The class distribution is relatively balanced. The no tumor class has
+        the largest number of training samples, while the glioma class has the
+        smallest. Since the imbalance ratio is only 1.21, the dataset is
+        suitable for baseline experimentation without severe imbalance
+        correction. Earlier notebook scenarios explored class weighting, but
+        the final CNN relies mainly on stratified splitting, label smoothing,
+        dropout, and weight decay for generalization.
+      </p>
+    </section>
+
+    <section>
+      <h2>Model Architecture</h2>
+      <p>
+        The final selected model is a custom convolutional neural network for
+        four-class brain MRI classification. The input layer receives a
+        grayscale MRI image reshaped as a <code>1 x 32 x 32</code> tensor.
+      </p>
+      <p>The CNN contains three convolutional blocks:</p>
+      <ul>
+        <li>
+          Convolution Block 1: <code>Conv2d(1, 32, kernel_size=3, padding=1)</code>,
+          ReLU activation, and 2 x 2 max pooling.
+        </li>
+        <li>
+          Convolution Block 2: <code>Conv2d(32, 64, kernel_size=3, padding=1)</code>,
+          ReLU activation, and 2 x 2 max pooling.
+        </li>
+        <li>
+          Convolution Block 3: <code>Conv2d(64, 128, kernel_size=3, padding=1)</code>,
+          ReLU activation, and 2 x 2 max pooling.
+        </li>
+      </ul>
+      <p>
+        After the convolutional blocks, the feature maps are flattened and
+        passed through a compact classifier:
+      </p>
+      <ul>
+        <li>
+          Fully Connected Layer: 2,048 input features to 128 neurons with ReLU
+          activation.
+        </li>
+        <li>Dropout Layer: dropout rate of 0.3.</li>
+        <li>
+          Output Layer: 4 logits corresponding to glioma, meningioma, no tumor,
+          and pituitary.
+        </li>
+      </ul>
+      <p>
+        The model outputs raw logits during training. Softmax is applied during
+        evaluation and inference to convert logits into class probabilities.
+      </p>
+    </section>
+
+    <section>
+      <h2>Training & Optimization</h2>
+      <p>
+        Several strategies were used to improve learning stability and reduce
+        overfitting.
+      </p>
+      <p>
+        The dataset was standardized using <code>StandardScaler</code>, fitted
+        only on the training data and reused for validation, testing, and
+        inference. A stratified 80/20 split was applied to the training CSV to
+        create the training and validation subsets.
+      </p>
+      <p>The final CNN was trained using PyTorch with the following configuration:</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Optimizer</td>
+              <td>Adam</td>
+            </tr>
+            <tr>
+              <td>Learning Rate</td>
+              <td>0.001</td>
+            </tr>
+            <tr>
+              <td>Weight Decay</td>
+              <td>1e-4</td>
+            </tr>
+            <tr>
+              <td>Loss Function</td>
+              <td>Cross-entropy with label smoothing</td>
+            </tr>
+            <tr>
+              <td>Label Smoothing</td>
+              <td>0.1</td>
+            </tr>
+            <tr>
+              <td>Batch Size</td>
+              <td>64</td>
+            </tr>
+            <tr>
+              <td>Maximum Epochs</td>
+              <td>50</td>
+            </tr>
+            <tr>
+              <td>Early Stopping Patience</td>
+              <td>6 epochs</td>
+            </tr>
+            <tr>
+              <td>Scheduler</td>
+              <td>ReduceLROnPlateau</td>
+            </tr>
+            <tr>
+              <td>Scheduler Factor</td>
+              <td>0.5</td>
+            </tr>
+            <tr>
+              <td>Scheduler Patience</td>
+              <td>2 epochs</td>
+            </tr>
+            <tr>
+              <td>Random Seed</td>
+              <td>42</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Label smoothing was added to reduce overconfident predictions,
+        especially for visually similar tumor classes. Adam handled adaptive
+        gradient updates, while weight decay discouraged overly large weights.
+        Dropout in the dense classifier further reduced overfitting.
+      </p>
+      <p>
+        The learning rate scheduler monitored validation loss and reduced the
+        learning rate when improvement slowed. Early stopping halted training
+        when validation loss failed to improve for six consecutive epochs. The
+        best validation-loss checkpoint was saved as
+        <code>best_cnn_label_smoothing1.pt</code> and reloaded before final test
+        evaluation.
+      </p>
+      <p>After evaluation, the deployment-ready artifacts were saved:</p>
+      <ul>
+        <li><code>cnn_model1.pt</code> for the trained CNN weights.</li>
+        <li><code>scaler.pkl1</code> for the fitted standardization pipeline.</li>
+        <li>
+          <code>metadata.pkl1</code> for image size, class count, and class
+          mapping.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Evaluation Metrics</h2>
+      <p>
+        The final CNN achieved strong performance on the unseen test set. It
+        reached a test accuracy of 97.33%, correctly classifying 1,276 out of
+        1,311 MRI images.
+      </p>
+      <p>
+        The best observed validation accuracy during training was 96.33%, while
+        the selected best-loss checkpoint evaluated at approximately 97.33% on
+        the test set. The small difference between validation and test
+        performance suggests that the model generalized well under the current
+        dataset split.
+      </p>
+      <p>
+        The strongest class-level performance appeared in the no tumor and
+        pituitary classes, both of which reached perfect recall on the test
+        set. Most remaining errors occurred between glioma and meningioma,
+        which is consistent with the notebook's observation that these classes
+        can share similar visual characteristics.
+      </p>
+
+      <h3>Confusion Matrix</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>True Label</th>
+              <th class="numeric">Predicted Glioma</th>
+              <th class="numeric">Predicted Meningioma</th>
+              <th class="numeric">Predicted No Tumor</th>
+              <th class="numeric">Predicted Pituitary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Glioma</td>
+              <td class="numeric">284</td>
+              <td class="numeric">16</td>
+              <td class="numeric">0</td>
+              <td class="numeric">0</td>
+            </tr>
+            <tr>
+              <td>Meningioma</td>
+              <td class="numeric">8</td>
+              <td class="numeric">287</td>
+              <td class="numeric">8</td>
+              <td class="numeric">3</td>
+            </tr>
+            <tr>
+              <td>No Tumor</td>
+              <td class="numeric">0</td>
+              <td class="numeric">0</td>
+              <td class="numeric">405</td>
+              <td class="numeric">0</td>
+            </tr>
+            <tr>
+              <td>Pituitary</td>
+              <td class="numeric">0</td>
+              <td class="numeric">0</td>
+              <td class="numeric">0</td>
+              <td class="numeric">300</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th class="numeric">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Overall Accuracy</td>
+              <td class="numeric">97.33%</td>
+            </tr>
+            <tr>
+              <td>Correct Predictions</td>
+              <td class="numeric">1,276</td>
+            </tr>
+            <tr>
+              <td>Misclassifications</td>
+              <td class="numeric">35</td>
+            </tr>
+            <tr>
+              <td>Total Test Samples</td>
+              <td class="numeric">1,311</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Classification Report</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th class="numeric">Precision</th>
+              <th class="numeric">Recall</th>
+              <th class="numeric">F1-Score</th>
+              <th class="numeric">Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0 - Glioma</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">0.95</td>
+              <td class="numeric">0.96</td>
+              <td class="numeric">300</td>
+            </tr>
+            <tr>
+              <td>1 - Meningioma</td>
+              <td class="numeric">0.95</td>
+              <td class="numeric">0.94</td>
+              <td class="numeric">0.94</td>
+              <td class="numeric">306</td>
+            </tr>
+            <tr>
+              <td>2 - No Tumor</td>
+              <td class="numeric">0.98</td>
+              <td class="numeric">1.00</td>
+              <td class="numeric">0.99</td>
+              <td class="numeric">405</td>
+            </tr>
+            <tr>
+              <td>3 - Pituitary</td>
+              <td class="numeric">0.99</td>
+              <td class="numeric">1.00</td>
+              <td class="numeric">1.00</td>
+              <td class="numeric">300</td>
+            </tr>
+            <tr>
+              <td>Accuracy</td>
+              <td class="numeric">-</td>
+              <td class="numeric">-</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">1,311</td>
+            </tr>
+            <tr>
+              <td>Macro Avg</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">1,311</td>
+            </tr>
+            <tr>
+              <td>Weighted Avg</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">0.97</td>
+              <td class="numeric">1,311</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Overall, the final CNN is accurate, compact, and suitable as the
+        current best model for CerebraSense. Its errors are concentrated in the
+        most visually similar tumor categories, while the non-tumor and
+        pituitary classes are separated clearly in the test results.
+      </p>
+    </section>
+
+    <section>
+      <h2>Future Improvements</h2>
+      <p>
+        While CerebraSense achieved strong classification performance, several
+        improvements can make the system more robust and clinically useful.
+      </p>
+      <p>
+        One important improvement is data augmentation. The final CNN currently
+        uses standardized 32 x 32 grayscale images without a full augmentation
+        pipeline. Applying controlled rotation, zooming, shifting, horizontal
+        flipping, contrast adjustment, and noise injection could expose the
+        model to more realistic MRI variation and improve robustness on unseen
+        scans.
+      </p>
+      <p>
+        Another direction is testing higher image resolutions. The 32 x 32
+        format makes the model lightweight and fast, but aggressive downsampling
+        may remove fine tumor boundaries or subtle anatomical features.
+        Comparing 32 x 32, 64 x 64, and 128 x 128 inputs would help measure the
+        tradeoff between speed and diagnostic detail.
+      </p>
+      <p>
+        The model could also be extended with interpretability tools such as
+        Grad-CAM or saliency maps. This would help show which image regions
+        influence the CNN's prediction and make the system easier to evaluate
+        in a medical imaging context.
+      </p>
+      <p>
+        Transfer learning is also a promising future enhancement. Although the
+        current CNN was intentionally trained from scratch, future versions
+        could compare it against medical-imaging or general-vision backbones
+        such as ResNet. This may improve convergence and robustness, especially
+        if the system is trained on larger or more diverse MRI datasets.
+      </p>
+      <p>
+        Finally, the deployment pipeline should be consolidated. The notebook
+        currently saves model weights, scaler, and metadata as separate files. A
+        future application version should organize these artifacts into a clear
+        inference module, include model versioning, preserve the exact
+        preprocessing pipeline, and validate predictions on external MRI
+        datasets before any clinical-facing use.
+      </p>
+    </section>
+  </article>
+</Container>
+
+<style>
+  .development-content {
+    color: rgb(71 85 105);
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .development-content section + section {
+    margin-top: 4rem;
+  }
+
+  .development-content h2 {
+    color: rgb(30 41 59);
+    font-size: 1.875rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .development-content h3 {
+    color: rgb(51 65 85);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 2.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .development-content p + p,
+  .development-content p + ul,
+  .development-content ul + p,
+  .development-content .table-scroll + p {
+    margin-top: 1rem;
+  }
+
+  .development-content ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+  }
+
+  .development-content li + li {
+    margin-top: 0.4rem;
+  }
+
+  .development-content code {
+    background: rgb(241 245 249);
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.35rem;
+    color: rgb(15 23 42);
+    font-size: 0.9em;
+    padding: 0.1rem 0.35rem;
+  }
+
+  .development-content .table-scroll {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.9rem;
+    margin-top: 1rem;
+    overflow-x: auto;
+  }
+
+  .development-content table {
+    border-collapse: collapse;
+    min-width: 100%;
+    text-align: left;
+  }
+
+  .development-content th,
+  .development-content td {
+    border-bottom: 1px solid rgb(226 232 240);
+    padding: 0.85rem 1rem;
+    white-space: nowrap;
+  }
+
+  .development-content tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .development-content th {
+    background: rgb(248 250 252);
+    color: rgb(15 23 42);
+    font-weight: 700;
+  }
+
+  .development-content .numeric {
+    text-align: right;
+  }
+
+  .development-content .note {
+    color: rgb(51 65 85);
+    font-weight: 600;
+  }
+</style>

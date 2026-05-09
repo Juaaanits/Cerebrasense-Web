@@ -1,0 +1,70 @@
+---
+// @ts-ignore
+import { Icon } from "astro-icon/components";
+
+const features = [
+  {
+    title: "Precision MRI Classification",
+    description:
+      "Utilizes a custom-optimized CNN architecture achieving 97.33% accuracy in classifying Glioma, Meningioma, and Pituitary tumors with high internal validity.",
+    icon: "bx:bxs-brain", // Standard solid brain icon
+  },
+  {
+    title: "Advanced Regularization",
+    description:
+      "Employs label smoothing and adaptive learning-rate scheduling to minimize overconfident errors and improve model generalization across datasets.",
+    icon: "bx:bxs-shield", // Changed from shield-quarter to standard solid shield
+  },
+  {
+    title: "Decision Support Interface",
+    description:
+      "A streamlined, professional UI designed for rapid upload and analysis, providing clinicians with instant, data-backed classification insights.",
+    icon: "bx:bxs-layout", // Better fit for a dashboard/UI icon
+  },
+  {
+    title: "Lightweight Architecture",
+    description:
+      "Engineered as a high-performing, from-scratch model that prioritizes computational efficiency without the heavy overhead of large transfer-learning backbones.",
+    icon: "bx:bxs-zap", // Boxicons uses 'zap' for the lightning bolt
+  },
+  {
+    title: "Standardized Data Pipeline",
+    description:
+      "Integrated preprocessing with StandardScaler and dynamic tensor reshaping ensures robust handling of grayscale MRI pixel data for reliable output.",
+    icon: "bx:bxs-component", // Represents layers/components well
+  },
+  {
+    title: "Deployment-Ready Design",
+    description:
+      "Built with a focus on real-world application, featuring saved model artifacts and metadata for seamless integration into web and mobile environments.",
+    icon: "bx:bxs-devices", // Standard devices icon
+  },
+];
+---
+
+<section id="features" class="scroll-mt-20">
+  <div class="mt-16 md:mt-0">
+    <h2 class="text-4xl lg:text-5xl font-bold lg:tracking-tight">
+      Advanced Neural Insights for Neuro-Oncology
+    </h2>
+    <p class="text-lg mt-4 text-slate-600">
+      CerebraSense combines rigorous deep learning research with an intuitive user experience to provide state-of-the-art decision support for brain tumor classification.
+    </p>
+  </div>
+</section>
+
+<div class="grid sm:grid-cols-2 md:grid-cols-3 mt-16 gap-16">
+  {
+    features.map((item) => (
+      <div class="flex gap-4 items-start">
+        <div class="mt-1 bg-black rounded-full p-2 w-8 h-8 shrink-0">
+          <Icon class="text-white" name={item.icon} />
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg">{item.title}</h3>{" "}
+          <p class="text-slate-500 mt-2 leading-relaxed">{item.description}</p>
+        </div>
+      </div>
+    ))
+  }
+</div>

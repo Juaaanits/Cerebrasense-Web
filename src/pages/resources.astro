@@ -1,0 +1,880 @@
+---
+import { Icon } from "astro-icon/components";
+import Layout from "@/layouts/Layout.astro";
+
+const resources = [
+  {
+    title: "Development Overview",
+    label: "Available",
+    description:
+      "Read the technical summary of the dataset, preprocessing pipeline, CNN architecture, training setup, and evaluation results.",
+    href: "/development",
+    action: "Open overview",
+  },
+  {
+    title: "GitHub Repository",
+    label: "Pending",
+    description:
+      "Add the source-code repository link here once the public repository is ready.",
+    action: "Link pending",
+  },
+  {
+    title: "Model Notebook",
+    label: "Pending",
+    description:
+      "Add the notebook link here if the model experiments are stored separately from the web application.",
+    action: "Link pending",
+  },
+  {
+    title: "Dataset Source",
+    label: "Pending",
+    description:
+      "Brain Tumor MRI Dataset by Masoud Nickparvar from Kaggle, used for multi-class MRI classification.",
+    action: "Link pending",
+  },
+];
+
+const techCategories = [
+  {
+    title: "Frontend",
+    icon: "bx:bxs-cog",
+    items: [
+      { name: "Astro", icon: "simple-icons:astro" },
+      { name: "TypeScript", icon: "simple-icons:typescript" },
+      { name: "Tailwind CSS", icon: "simple-icons:tailwindcss" },
+    ],
+  },
+  {
+    title: "Icons & SEO",
+    icon: "bx:bxs-search",
+    items: [
+      { name: "astro-icon", icon: "bx:bxs-cog" },
+      { name: "Iconify", icon: "simple-icons:iconify" },
+      { name: "astro-seo", icon: "bx:bxs-search" },
+      { name: "@astrojs/sitemap", icon: "bx:bx-sitemap" },
+    ],
+  },
+  {
+    title: "Model Development",
+    icon: "bx:bxs-brain",
+    items: [
+      { name: "Python", icon: "simple-icons:python" },
+      { name: "NumPy", icon: "simple-icons:numpy" },
+      { name: "PyTorch", icon: "simple-icons:pytorch" },
+      { name: "scikit-learn", icon: "simple-icons:scikitlearn" },
+    ],
+  },
+  {
+    title: "Mobile & Deployment",
+    icon: "bx:bxs-mobile",
+    items: [
+      { name: "React Native", icon: "simple-icons:react" },
+      { name: "Expo", icon: "simple-icons:expo" },
+      { name: "TypeScript", icon: "simple-icons:typescript" },
+      { name: "FastAPI", icon: "simple-icons:fastapi" },
+      { name: "PyTorch Backend", icon: "simple-icons:pytorch" },
+      { name: "Supabase", icon: "simple-icons:supabase" },
+      { name: "ExecuTorch", icon: "bx:bxs-chip" },
+    ],
+  },
+];
+
+---
+
+<Layout title="Resources">
+  <main class="resources-page">
+    <section class="resources-hero">
+      <p class="eyebrow">Resources</p>
+      <h1>Project References & Setup Notes</h1>
+      <p>
+        Technical links, local setup commands, and supporting project notes for
+        CerebraSense.
+      </p>
+    </section>
+
+    <section class="resource-grid" aria-label="Project resources">
+      {
+        resources.map((item) => (
+          <article class="resource-card">
+            <div class="card-topline">
+              <span class="status-badge">{item.label}</span>
+            </div>
+            <h2>{item.title}</h2>
+            <p>{item.description}</p>
+            {
+              item.href ? (
+                <a class="resource-action" href={item.href}>
+                  {item.action}
+                </a>
+              ) : (
+                <span class="resource-action muted">{item.action}</span>
+              )
+            }
+          </article>
+        ))
+      }
+    </section>
+
+    <section class="setup-section">
+      <div class="section-copy">
+        <p class="eyebrow">Local Setup</p>
+        <h2>Run The Web App</h2>
+        <p>
+          Use these commands when reviewing or modifying the Astro frontend
+          locally. The development server runs the site at
+          <code>localhost:4321</code>.
+        </p>
+      </div>
+
+      <div class="terminal-card" aria-label="Local setup commands">
+        <div class="terminal-bar">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <pre><code>npm install
+npm run dev
+
+# Open the local site
+http://localhost:4321
+
+# Production build
+npm run build
+npm run preview</code></pre>
+      </div>
+    </section>
+
+    <section class="reference-grid">
+      <article class="reference-card">
+        <p class="eyebrow">Codebase</p>
+        <h2>Project Structure</h2>
+        <div class="file-browser">
+          <div class="browser-bar">
+            <span></span>
+            <span></span>
+            <span></span>
+            <code>cerebrasense-web/</code>
+          </div>
+
+          <div class="file-tree">
+            <details open>
+              <summary>
+                <Icon class="tree-icon" name="bx:bxs-folder-open" />
+                <span>src</span>
+                <span class="tree-badge">4 items</span>
+              </summary>
+              <div class="tree-children">
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>components</span>
+                </div>
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>layouts</span>
+                </div>
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>pages</span>
+                </div>
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>styles</span>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <Icon class="tree-icon" name="bx:bxs-folder" />
+                <span>public</span>
+              </summary>
+              <div class="tree-children">
+                <div class="tree-row muted-row">
+                  <Icon class="tree-icon" name="bx:bxs-file" />
+                  <span>static assets</span>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <Icon class="tree-icon" name="bx:bxs-folder" />
+                <span>dist</span>
+              </summary>
+              <div class="tree-children">
+                <div class="tree-row muted-row">
+                  <Icon class="tree-icon" name="bx:bxs-file" />
+                  <span>production build output</span>
+                </div>
+              </div>
+            </details>
+
+            <div class="tree-row">
+              <Icon class="tree-icon file-json" name="bx:bxs-file-json" />
+              <span>package.json</span>
+            </div>
+            <div class="tree-row">
+              <Icon class="tree-icon file-config" name="bx:bxs-cog" />
+              <span>astro.config.mjs</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="reference-card">
+        <p class="eyebrow">Stack</p>
+        <h2>Tech Stack</h2>
+        <div class="stack-grid">
+          {
+            techCategories.map((category, index) => (
+              <details class="stack-card" open={index === 0}>
+                <summary class="stack-heading">
+                  <span>{category.title}</span>
+                  <span class="stack-count">{category.items.length} tools</span>
+                </summary>
+                <div class="stack-tags">
+                  {category.items.map((item) => (
+                    <span class="stack-tag">
+                      <Icon class="stack-icon" name={item.icon} />
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+              </details>
+            ))
+          }
+        </div>
+      </article>
+    </section>
+
+    <section class="bottom-card-grid">
+      <section class="developer-card">
+        <img
+          class="developer-photo"
+          src="/profile.png"
+          alt="Portrait of Juanito M. Ramos II"
+          loading="lazy"
+        />
+        <div class="developer-content">
+          <p class="eyebrow">Developer</p>
+          <h2>Juanito M. Ramos II</h2>
+          <p>
+            CerebraSense was designed, developed, and organized end-to-end by
+            Juanito, covering the web interface, project structure,
+            documentation, and machine learning development workflow.
+          </p>
+          <div class="developer-actions">
+            <a class="developer-link" href="#">
+              <Icon class="button-icon" name="simple-icons:linkedin" />
+              LinkedIn
+            </a>
+            <a class="developer-link secondary" href="#">
+              <Icon class="button-icon" name="simple-icons:github" />
+              GitHub
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="disclaimer-card">
+        <div class="note-icon-wrap" aria-hidden="true">
+          <Icon class="note-icon" name="bx:bxs-info-circle" />
+        </div>
+        <div class="disclaimer-content">
+          <p class="eyebrow">Important Note</p>
+          <h2>Research Prototype Disclaimer</h2>
+          <p>
+            CerebraSense is a research and educational prototype. It is not
+            intended for clinical diagnosis without external validation,
+            regulatory review, and professional medical oversight.
+          </p>
+        </div>
+      </section>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .resources-page {
+    --ink: #0f172a;
+    --muted: #475569;
+    --line: #e2e8f0;
+    --soft: #f8fafc;
+    --accent: #111827;
+    --accent-dark: #0f172a;
+    --warning: #0f172a;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 72px 24px 96px;
+  }
+
+  .resources-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 32px;
+    background:
+      radial-gradient(circle at 18% 20%, rgba(15, 23, 42, 0.08), transparent 30%),
+      linear-gradient(135deg, #ffffff 0%, #f8fafc 52%, #f1f5f9 100%);
+    padding: 64px 48px;
+    text-align: center;
+  }
+
+  .resources-hero::after {
+    content: "";
+    position: absolute;
+    right: -80px;
+    bottom: -100px;
+    width: 260px;
+    height: 260px;
+    border: 34px solid rgba(15, 23, 42, 0.06);
+    border-radius: 999px;
+  }
+
+  .eyebrow {
+    color: var(--accent-dark);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    margin: 0 0 14px;
+    text-transform: uppercase;
+  }
+
+  .resources-hero h1,
+  .section-copy h2,
+  .reference-card h2,
+  .developer-card h2,
+  .disclaimer-card h2 {
+    color: var(--ink);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .resources-hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5.5rem);
+  }
+
+  .resources-hero p:last-child {
+    color: var(--muted);
+    font-size: 1.2rem;
+    line-height: 1.7;
+    margin: 22px auto 0;
+    max-width: 760px;
+  }
+
+  .resource-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 48px;
+  }
+
+  .resource-card,
+  .reference-card,
+  .developer-card,
+  .disclaimer-card {
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+  }
+
+  .resource-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 250px;
+    padding: 28px;
+  }
+
+  .resource-card:hover {
+    border-color: rgba(15, 23, 42, 0.38);
+    transform: translateY(-3px);
+    transition: 180ms ease;
+  }
+
+  .card-topline {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 28px;
+  }
+
+  .status-badge {
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--accent-dark);
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 6px 10px;
+    text-transform: uppercase;
+  }
+
+  .resource-card h2 {
+    color: var(--ink);
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin: 12px 0 0;
+  }
+
+  .resource-card p,
+  .section-copy p,
+  .disclaimer-card p {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .resource-card p {
+    margin: 16px 0 24px;
+  }
+
+  .resource-action {
+    align-items: center;
+    align-self: flex-start;
+    background: var(--ink);
+    border-radius: 12px;
+    color: #ffffff;
+    display: inline-flex;
+    font-weight: 800;
+    justify-content: center;
+    margin-top: auto;
+    min-height: 44px;
+    padding: 0 18px;
+    text-decoration: none;
+  }
+
+  .resource-action.muted {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .setup-section {
+    align-items: center;
+    display: grid;
+    gap: 36px;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    margin-top: 72px;
+  }
+
+  .section-copy h2,
+  .reference-card h2,
+  .developer-card h2,
+  .disclaimer-card h2 {
+    font-size: clamp(2rem, 4vw, 3.1rem);
+  }
+
+  .section-copy p {
+    margin: 18px 0 0;
+  }
+
+  code {
+    border-radius: 6px;
+    background: #e8eef4;
+    color: var(--ink);
+    padding: 2px 6px;
+  }
+
+  .terminal-card {
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, 0.18);
+    border-radius: 28px;
+    background: #0b0f16;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.2);
+  }
+
+  .terminal-bar {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    padding: 16px 20px;
+  }
+
+  .terminal-bar span {
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    background: #f8fafc;
+  }
+
+  .terminal-bar span:nth-child(2) {
+    background: #94a3b8;
+  }
+
+  .terminal-bar span:nth-child(3) {
+    background: #334155;
+  }
+
+  .terminal-card pre,
+  .reference-card pre {
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .terminal-card pre {
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    padding: 26px;
+  }
+
+  .terminal-card code,
+  .reference-card code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  .reference-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 72px;
+  }
+
+  .reference-card {
+    padding: 30px;
+  }
+
+  .reference-card h2 {
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+  }
+
+  .file-browser {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #ffffff;
+    margin-top: 24px;
+    overflow: hidden;
+  }
+
+  .browser-bar {
+    align-items: center;
+    background: var(--soft);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .browser-bar span {
+    background: #cbd5e1;
+    border-radius: 999px;
+    height: 9px;
+    width: 9px;
+  }
+
+  .browser-bar code {
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-left: 8px;
+    padding: 0;
+  }
+
+  .file-tree {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+  }
+
+  .file-tree details {
+    border-radius: 10px;
+  }
+
+  .file-tree summary,
+  .tree-row {
+    align-items: center;
+    border-radius: 10px;
+    color: var(--muted);
+    display: flex;
+    font-size: 0.92rem;
+    gap: 9px;
+    min-height: 34px;
+    padding: 0 10px;
+  }
+
+  .file-tree summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .file-tree summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .file-tree summary:hover,
+  .tree-row:hover {
+    background: var(--soft);
+    color: var(--ink);
+  }
+
+  .tree-children {
+    border-left: 1px solid var(--line);
+    display: grid;
+    margin-left: 19px;
+    padding-left: 10px;
+  }
+
+  .tree-icon {
+    color: var(--ink);
+    flex: 0 0 16px;
+    height: 16px;
+    width: 16px;
+  }
+
+  .file-json,
+  .file-config {
+    color: var(--muted);
+  }
+
+  .tree-badge {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    font-size: 0.68rem;
+    font-weight: 800;
+    margin-left: 4px;
+    padding: 2px 7px;
+  }
+
+  .muted-row {
+    color: #64748b;
+  }
+
+  .stack-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .stack-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 0;
+  }
+
+  .stack-heading {
+    align-items: center;
+    color: var(--ink);
+    display: flex;
+    font-size: 0.98rem;
+    font-weight: 900;
+    justify-content: space-between;
+    letter-spacing: -0.02em;
+    list-style: none;
+    min-height: 48px;
+    padding: 0 14px;
+    text-transform: none;
+  }
+
+  .stack-heading::-webkit-details-marker {
+    display: none;
+  }
+
+  .stack-heading::after {
+    color: var(--muted);
+    content: "+";
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-left: 12px;
+  }
+
+  .stack-card[open] .stack-heading::after {
+    content: "-";
+  }
+
+  .stack-count {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    margin-left: auto;
+    padding: 3px 8px;
+  }
+
+  .stack-tags {
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 14px;
+    padding: 14px;
+  }
+
+  .stack-tag {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    color: var(--ink);
+    display: inline-flex;
+    font-size: 0.9rem;
+    font-weight: 650;
+    gap: 7px;
+    min-height: 36px;
+    padding: 0 13px;
+  }
+
+  .stack-icon {
+    color: var(--muted);
+    height: 14px;
+    width: 14px;
+  }
+
+  .bottom-card-grid {
+    align-items: stretch;
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 72px;
+  }
+
+  .developer-card {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: auto minmax(0, 1fr);
+    margin: 0;
+    min-height: 100%;
+    padding: 28px;
+  }
+
+  .disclaimer-card {
+    background:
+      linear-gradient(135deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98)),
+      #ffffff;
+    display: grid;
+    gap: 22px;
+    grid-template-columns: auto minmax(0, 1fr);
+    margin-top: 0;
+    min-height: 100%;
+    padding: 28px;
+  }
+
+  .developer-card h2 {
+    color: var(--ink);
+    font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+  }
+
+  .developer-card .eyebrow,
+  .disclaimer-card .eyebrow {
+    color: var(--accent-dark);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .developer-photo,
+  .note-icon-wrap {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    display: flex;
+    height: 56px;
+    width: 56px;
+  }
+
+  .developer-photo {
+    display: block;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .note-icon-wrap {
+    align-items: center;
+    background: #f8fafc;
+    color: var(--ink);
+    justify-content: center;
+  }
+
+  .note-icon {
+    height: 22px;
+    width: 22px;
+  }
+
+  .developer-content p:last-of-type,
+  .disclaimer-content p:last-of-type {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 14px 0 0;
+    max-width: 500px;
+  }
+
+  .developer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start;
+    margin-top: 16px;
+  }
+
+  .developer-link {
+    align-items: center;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 9px;
+    color: #ffffff;
+    display: inline-flex;
+    font-size: 0.86rem;
+    font-weight: 800;
+    justify-content: center;
+    min-height: 34px;
+    min-width: 96px;
+    padding: 0 13px;
+    text-decoration: none;
+  }
+
+  .button-icon {
+    height: 14px;
+    margin-right: 8px;
+    width: 14px;
+  }
+
+  .developer-link:hover {
+    transform: translateY(-2px);
+    transition: 180ms ease;
+  }
+
+  .developer-link.secondary {
+    background: #ffffff;
+    color: var(--ink);
+  }
+
+  .disclaimer-card h2 {
+    font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+  }
+
+  @media (max-width: 840px) {
+    .resources-page {
+      padding: 48px 18px 72px;
+    }
+
+    .resources-hero {
+      padding: 42px 24px;
+      text-align: left;
+    }
+
+    .resource-grid,
+    .setup-section,
+    .reference-grid,
+    .bottom-card-grid,
+    .developer-card {
+      grid-template-columns: 1fr;
+    }
+
+    .developer-actions {
+      justify-content: flex-start;
+    }
+  }
+</style>
