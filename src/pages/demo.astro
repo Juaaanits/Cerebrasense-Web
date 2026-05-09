@@ -1,0 +1,777 @@
+---
+import { Icon } from "astro-icon/components";
+import Layout from "@/layouts/Layout.astro";
+
+const probabilities = [
+  { label: "Glioma", value: 0.1 },
+  { label: "Meningioma", value: 0.4 },
+  { label: "No Tumor", value: 99.5, highlight: true },
+  { label: "Pituitary", value: 0.0 },
+];
+---
+
+<Layout title="Demo">
+  <main class="try-page">
+    <section class="upload-shell" aria-labelledby="upload-title">
+      <div class="upload-heading">
+        <p>Upload</p>
+        <span aria-hidden="true">i</span>
+      </div>
+
+      <div class="upload-card" data-drop-zone>
+        <input
+          id="scan-upload"
+          type="file"
+          accept="image/jpeg,image/png"
+          data-file-input
+          hidden
+        />
+
+        <label for="scan-upload" class="upload-label">
+          <span class="upload-icon">
+            <Icon name="bx:bxs-cloud-upload" />
+          </span>
+
+          <span id="upload-title" class="upload-title">
+            Drag & Drop Files or <span>Browse</span>
+          </span>
+
+          <span class="upload-meta">Supported Formats: JPEG, PNG</span>
+          <span class="upload-limit">Upload Limit: 1 image file only.</span>
+        </label>
+      </div>
+
+      <p class="upload-error" data-upload-error hidden></p>
+
+      <div class="upload-ready" data-upload-ready hidden>
+        <p class="uploaded-title">Uploaded File</p>
+        <div class="uploaded-file">
+          <p data-file-name></p>
+          <button
+            type="button"
+            class="remove-file"
+            aria-label="Remove uploaded file"
+            data-remove-file>
+            <Icon name="bx:bxs-trash" />
+          </button>
+        </div>
+        <button type="button" class="analysis-button" data-analysis-button>
+          Start Analysis
+        </button>
+      </div>
+
+      <dialog class="analysis-result" data-analysis-result>
+        <div class="result-card">
+          <header class="result-header">
+            <h2>Analysis Result</h2>
+            <div class="result-actions">
+              <a href="/repository">Go to Repository</a>
+              <button
+                type="button"
+                class="result-close"
+                aria-label="Close analysis result"
+                data-result-close>
+                <Icon name="bx:x" />
+              </button>
+            </div>
+          </header>
+
+          <div class="result-layout">
+            <figure class="result-scan">
+              <div
+                class="result-scan-placeholder"
+                aria-label="MRI preview unavailable">
+              </div>
+              <figcaption data-result-file-name>Uploaded MRI image</figcaption>
+            </figure>
+
+            <div class="result-summary">
+              <p class="result-label">Predicted Diagnosis:</p>
+              <h3>No Tumor</h3>
+
+              <div class="probabilities">
+                <p class="result-label">Class Probabilities:</p>
+                <div class="probability-list">
+                  {probabilities.map((item) => (
+                    <div class="probability-item">
+                      <div class="probability-meta">
+                        <span>{item.label}</span>
+                        <span>{item.value.toFixed(1)}%</span>
+                      </div>
+                      <div class="probability-track">
+                        <span
+                          class:list={[
+                            "probability-fill",
+                            item.highlight && "probability-fill-highlight",
+                          ]}
+                          style={`width: ${item.value}%`}>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </dialog>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  const dropZone = document.querySelector<HTMLElement>("[data-drop-zone]");
+  const fileInput = document.querySelector<HTMLInputElement>("[data-file-input]");
+  const readyPanel = document.querySelector<HTMLElement>("[data-upload-ready]");
+  const fileName = document.querySelector<HTMLElement>("[data-file-name]");
+  const errorMessage = document.querySelector<HTMLElement>("[data-upload-error]");
+  const removeFileButton =
+    document.querySelector<HTMLButtonElement>("[data-remove-file]");
+  const analysisButton =
+    document.querySelector<HTMLButtonElement>("[data-analysis-button]");
+  const resultPanel =
+    document.querySelector<HTMLDialogElement>("[data-analysis-result]");
+  const resultFileName =
+    document.querySelector<HTMLElement>("[data-result-file-name]");
+  const resultCloseButton =
+    document.querySelector<HTMLButtonElement>("[data-result-close]");
+
+  const allowedTypes = ["image/jpeg", "image/png"];
+  let selectedFile: File | null = null;
+  let isAnalyzing = false;
+
+  const setError = (message: string) => {
+    if (!errorMessage) {
+      return;
+    }
+
+    errorMessage.textContent = message;
+    errorMessage.hidden = false;
+  };
+
+  const clearError = () => {
+    if (!errorMessage) {
+      return;
+    }
+
+    errorMessage.textContent = "";
+    errorMessage.hidden = true;
+  };
+
+  const hideAnalysisResult = () => {
+    resultPanel?.close();
+    document.body.style.overflow = "";
+  };
+
+  const showAnalysisResult = (file: File) => {
+    if (!resultPanel) {
+      setError("Analysis completed, but the result panel could not be shown.");
+      return;
+    }
+
+    if (resultFileName) {
+      resultFileName.textContent = file.name;
+    }
+
+    if (resultPanel.showModal) {
+      resultPanel.showModal();
+    } else {
+      resultPanel.setAttribute("open", "");
+    }
+
+    document.body.style.overflow = "hidden";
+  };
+
+  const clearSelectedFile = () => {
+    if (isAnalyzing) {
+      return;
+    }
+
+    selectedFile = null;
+
+    if (fileInput) {
+      fileInput.value = "";
+    }
+
+    if (fileName) {
+      fileName.textContent = "";
+    }
+
+    readyPanel?.setAttribute("hidden", "");
+    dropZone?.classList.remove("has-file");
+    hideAnalysisResult();
+    clearError();
+  };
+
+  const setSelectedFile = (file?: File) => {
+    if (isAnalyzing) {
+      return;
+    }
+
+    if (!file) {
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      readyPanel?.setAttribute("hidden", "");
+      setError("Please upload a JPEG or PNG image only.");
+      return;
+    }
+
+    clearError();
+    hideAnalysisResult();
+    selectedFile = file;
+
+    if (fileName) {
+      fileName.textContent = file.name;
+    }
+
+    readyPanel?.removeAttribute("hidden");
+    dropZone?.classList.add("has-file");
+  };
+
+  const setAnalyzingState = (state: boolean) => {
+    isAnalyzing = state;
+
+    if (analysisButton) {
+      analysisButton.disabled = state;
+      analysisButton.textContent = state ? "Analyzing..." : "Start Analysis";
+    }
+
+    if (fileInput) {
+      fileInput.disabled = state;
+    }
+
+    if (removeFileButton) {
+      removeFileButton.disabled = state;
+    }
+
+    dropZone?.classList.toggle("is-analyzing", state);
+  };
+
+  const startAnalysis = async () => {
+    if (isAnalyzing) {
+      return;
+    }
+
+    const file = selectedFile ?? fileInput?.files?.[0];
+
+    if (!file) {
+      setError("Please upload an MRI image before starting analysis.");
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please upload a JPEG or PNG image only.");
+      return;
+    }
+
+    clearError();
+    setAnalyzingState(true);
+
+    try {
+      // Temporary demo delay. Replace this with the FastAPI request later.
+      await new Promise((resolve) => window.setTimeout(resolve, 1800));
+      showAnalysisResult(file);
+    } catch {
+      hideAnalysisResult();
+      setError("Analysis failed. Please try again.");
+    } finally {
+      setAnalyzingState(false);
+    }
+  };
+
+  fileInput?.addEventListener("change", () => {
+    setSelectedFile(fileInput.files?.[0]);
+  });
+
+  dropZone?.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropZone.classList.add("is-dragging");
+  });
+
+  dropZone?.addEventListener("dragleave", () => {
+    dropZone.classList.remove("is-dragging");
+  });
+
+  dropZone?.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropZone.classList.remove("is-dragging");
+
+    const file = event.dataTransfer?.files[0];
+    setSelectedFile(file);
+  });
+
+  removeFileButton?.addEventListener("click", clearSelectedFile);
+  analysisButton?.addEventListener("click", startAnalysis);
+  resultCloseButton?.addEventListener("click", hideAnalysisResult);
+
+  resultPanel?.addEventListener("click", (event) => {
+    if (event.target === resultPanel) {
+      hideAnalysisResult();
+    }
+  });
+
+  resultPanel?.addEventListener("close", () => {
+    document.body.style.overflow = "";
+  });
+</script>
+
+<style>
+  .try-page {
+    min-height: calc(100vh - 180px);
+    background:
+      radial-gradient(circle at top, rgba(15, 23, 42, 0.05), transparent 34%),
+      #ffffff;
+    color: rgb(15 23 42);
+    padding: clamp(4rem, 9vw, 7rem) 1.25rem;
+  }
+
+  .upload-shell {
+    width: min(1040px, 100%);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .upload-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 2.5rem;
+    color: rgb(71 85 105);
+    text-transform: uppercase;
+  }
+
+  .upload-heading p {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .upload-heading span {
+    display: grid;
+    width: 19px;
+    height: 19px;
+    place-items: center;
+    border: 1px solid rgb(100 116 139);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .upload-card {
+    display: grid;
+    min-height: clamp(320px, 42vw, 440px);
+    place-items: center;
+    border: 2px dashed rgb(148 163 184);
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.06);
+    transition:
+      border-color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .upload-card.is-dragging,
+  .upload-card.has-file {
+    border-color: rgb(15 23 42);
+    background: rgb(248 250 252);
+    box-shadow: 0 28px 80px rgba(15, 23, 42, 0.1);
+  }
+
+  .upload-card.is-dragging {
+    transform: translateY(-2px);
+  }
+
+  .upload-card.is-analyzing {
+    pointer-events: none;
+    opacity: 0.72;
+  }
+
+  .upload-label {
+    display: grid;
+    width: 100%;
+    min-height: inherit;
+    place-items: center;
+    align-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    cursor: pointer;
+  }
+
+  .upload-icon {
+    display: inline-flex;
+    width: 64px;
+    height: 64px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(15 23 42);
+  }
+
+  .upload-icon :global(svg) {
+    width: 64px;
+    height: 64px;
+  }
+
+  .upload-title {
+    color: rgb(15 23 42);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: clamp(1.65rem, 4vw, 2.35rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+
+  .upload-title span {
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+
+  .upload-meta,
+  .upload-limit {
+    color: rgb(71 85 105);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .upload-limit {
+    color: rgb(100 116 139);
+    font-size: 0.95rem;
+  }
+
+  .upload-error {
+    margin: 1rem 0 0;
+    color: rgb(127 29 29);
+    font-weight: 700;
+  }
+
+  .upload-ready {
+    display: grid;
+    gap: 1.35rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .upload-ready[hidden] {
+    display: none;
+  }
+
+  .uploaded-title {
+    margin: 0;
+    color: rgb(15 23 42);
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .uploaded-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 96px;
+    border: 1px solid rgb(203 213 225);
+    border-radius: 12px;
+    background: white;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.05);
+  }
+
+  .uploaded-file p {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: rgb(15 23 42);
+    font-size: clamp(1rem, 2.2vw, 1.35rem);
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .remove-file {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: rgb(15 23 42);
+    cursor: pointer;
+    transition:
+      background 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .remove-file:hover {
+    border-color: rgb(203 213 225);
+    background: rgb(248 250 252);
+  }
+
+  .remove-file:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .remove-file :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+
+  .analysis-button {
+    justify-self: center;
+    margin-top: 1rem;
+    border: 2px solid #000;
+    border-radius: 8px;
+    background: #000;
+    color: white;
+    padding: 0.9rem 1.6rem;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+      transform 180ms ease,
+      background 180ms ease;
+  }
+
+  .analysis-button:hover {
+    background: rgb(31 41 55);
+    transform: translateY(-1px);
+  }
+
+  .analysis-button:disabled {
+    border-color: rgb(148 163 184);
+    background: rgb(148 163 184);
+    color: black;
+    cursor: wait;
+    transform: none;
+  }
+
+  .analysis-result {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(1120px, calc(100vw - 32px));
+    max-height: min(90vh, 880px);
+    border: 0;
+    border-radius: 22px;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    background: transparent;
+    transform: translate(-50%, -50%);
+    text-align: left;
+  }
+
+  .analysis-result::backdrop {
+    background: rgba(15, 23, 42, 0.68);
+    backdrop-filter: blur(8px);
+  }
+
+  .result-card {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    background: white;
+    padding: clamp(1.25rem, 3.5vw, 2.25rem);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: clamp(1.5rem, 4vw, 2.25rem);
+  }
+
+  .result-header h2 {
+    margin: 0;
+    color: rgb(15 23 42);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  .result-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .result-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #000;
+    border-radius: 8px;
+    background: #000;
+    color: white;
+    padding: 0.75rem 1.15rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: background 180ms ease;
+  }
+
+  .result-actions a:hover {
+    background: rgb(31 41 55);
+  }
+
+  .result-close {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(203 213 225);
+    border-radius: 10px;
+    background: white;
+    color: rgb(15 23 42);
+    cursor: pointer;
+    transition:
+      background 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .result-close:hover {
+    border-color: rgb(15 23 42);
+    background: rgb(248 250 252);
+  }
+
+  .result-close :global(svg) {
+    width: 28px;
+    height: 28px;
+  }
+
+  .result-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.95fr) minmax(280px, 1.05fr);
+    gap: clamp(1.75rem, 5vw, 3rem);
+    align-items: start;
+  }
+
+  .result-scan {
+    margin: 0;
+    text-align: center;
+  }
+
+  .result-scan-placeholder {
+    min-height: clamp(260px, 36vw, 420px);
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    background:
+      linear-gradient(135deg, rgba(15, 23, 42, 0.03), transparent 38%),
+      #f8fafc;
+  }
+
+  .result-scan figcaption {
+    margin-top: 1rem;
+    overflow-wrap: anywhere;
+    color: rgb(71 85 105);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .result-summary {
+    padding-top: 0.35rem;
+  }
+
+  .result-label {
+    margin: 0;
+    color: rgb(71 85 105);
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .result-summary h3 {
+    margin: 0.85rem 0 2rem;
+    color: rgb(15 23 42);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  .probabilities {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .probability-list {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .probability-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.55rem;
+    color: rgb(30 41 59);
+    font-size: 0.98rem;
+    font-weight: 800;
+  }
+
+  .probability-track {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e2e8f0;
+  }
+
+  .probability-fill {
+    display: block;
+    height: 100%;
+    min-width: 2px;
+    border-radius: inherit;
+    background: rgb(100 116 139);
+  }
+
+  .probability-fill-highlight {
+    background: rgb(15 23 42);
+  }
+
+  @media (max-width: 640px) {
+    .try-page {
+      padding-top: 3.5rem;
+    }
+
+    .upload-card {
+      min-height: 320px;
+    }
+
+    .analysis-result {
+      width: calc(100vw - 24px);
+      max-height: 90vh;
+    }
+
+    .result-header,
+    .result-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .result-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .result-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .result-actions a {
+      flex: 1;
+    }
+  }
+</style>

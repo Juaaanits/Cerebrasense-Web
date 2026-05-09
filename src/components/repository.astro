@@ -1,0 +1,791 @@
+---
+import Container from "@/components/container.astro";
+import Sectionhead from "@/components/sectionhead.astro";
+
+const filters = ["All", "Glioma", "No Tumor", "Pituitary", "Meningioma"];
+
+const noTumorDetails = {
+  insightTitle: "No Tumor",
+  insightSubtitle: "No abnormal growth detected",
+  description: [
+    "The brain scan shows no signs of tumor or abnormal growth. This indicates healthy brain tissue with normal cellular structure and function.",
+    "A healthy brain efficiently processes information, maintains proper blood flow, and coordinates essential functions including movement, cognition, memory, and sensory processing.",
+  ],
+  signsTitle: "Signs of Brain Health",
+  signs: [
+    "Normal brain tissue structure",
+    "Clear neural pathways",
+    "Normal ventricle size",
+    "Healthy white matter",
+    "Clear cerebrospinal fluid",
+    "Healthy blood vessel patterns",
+    "Proper brain symmetry",
+    "Intact blood-brain barrier",
+    "Normal gray matter density",
+    "No mass effects or swelling",
+  ],
+  recommendation:
+    "No treatment is required as no abnormal growths were detected. Continue routine check-ups and consult healthcare professionals for proper medical guidance.",
+  notice:
+    "Great news: This information is for educational purposes only and should not replace professional medical advice.",
+};
+
+const gliomaDetails = {
+  insightTitle: "Glioma",
+  insightSubtitle: "Tumor-like pattern detected",
+  description: [
+    "The scan pattern is most consistent with the glioma class in the current model output. Glioma predictions usually indicate image features that resemble abnormal tissue growth originating from glial cells.",
+    "This result should be treated as a research prototype output only. A qualified medical specialist must review MRI findings before any diagnostic decision is made.",
+  ],
+  signsTitle: "Observed Model Indicators",
+  signs: [
+    "Localized abnormal intensity pattern",
+    "Tumor-like texture response",
+    "Irregular tissue contrast",
+    "Spatial features aligned with glioma class",
+    "High model confidence for glioma",
+    "Low probability for non-tumor class",
+    "Pattern requires clinical review",
+    "External validation still required",
+  ],
+  recommendation:
+    "Forward the scan and model output to a qualified healthcare professional for proper radiology review, clinical context, and follow-up testing if needed.",
+  notice:
+    "Important: This is not a clinical diagnosis. CerebraSense is a research and educational prototype.",
+};
+
+const analyses = [
+  {
+    id: "no-tumor-0404",
+    image: "",
+    prediction: "No Tumor",
+    confidence: "99.5%",
+    filename: "Te-no_0404.jpg",
+    date: "August 1, 2025",
+    category: "No Tumor",
+    scores: [
+      { label: "Glioma", value: 0 },
+      { label: "Meningioma", value: 0 },
+      { label: "No Tumor", value: 99, highlight: true },
+      { label: "Pituitary", value: 0 },
+    ],
+    ...noTumorDetails,
+  },
+  {
+    id: "glioma-0000",
+    image: "",
+    prediction: "Glioma",
+    confidence: "97.8%",
+    filename: "Te-glTr_0000.jpg",
+    date: "August 1, 2025",
+    category: "Glioma",
+    scores: [
+      { label: "Glioma", value: 98, highlight: true },
+      { label: "Meningioma", value: 1 },
+      { label: "No Tumor", value: 0 },
+      { label: "Pituitary", value: 1 },
+    ],
+    ...gliomaDetails,
+  },
+  {
+    id: "glioma-0024",
+    image: "",
+    prediction: "Glioma",
+    confidence: "99.5%",
+    filename: "1000000024.jpg",
+    date: "August 1, 2025",
+    category: "Glioma",
+    scores: [
+      { label: "Glioma", value: 99, highlight: true },
+      { label: "Meningioma", value: 1 },
+      { label: "No Tumor", value: 0 },
+      { label: "Pituitary", value: 0 },
+    ],
+    ...gliomaDetails,
+  },
+  {
+    id: "glioma-0032",
+    image: "",
+    prediction: "Glioma",
+    confidence: "99.1%",
+    filename: "Te-gl_0032.jpg",
+    date: "August 1, 2025",
+    category: "Glioma",
+    scores: [
+      { label: "Glioma", value: 99, highlight: true },
+      { label: "Meningioma", value: 0 },
+      { label: "No Tumor", value: 0 },
+      { label: "Pituitary", value: 1 },
+    ],
+    ...gliomaDetails,
+  },
+];
+---
+
+<Container>
+  <Sectionhead>
+    <Fragment slot="title">Repository of CerebraSense</Fragment>
+    <Fragment slot="desc">
+      A collection of sample MRI analysis records for the future scan history
+      workflow.
+    </Fragment>
+  </Sectionhead>
+
+  <section class="repository-content">
+    <div class="filter-row">
+      {filters.map((filter) => (
+        <button
+          type="button"
+          class={filter === "All" ? "active" : ""}
+          data-filter={filter}>
+          {filter}
+        </button>
+      ))}
+    </div>
+
+    <div class="repository-results">
+      <p class="repository-status" data-loading-state>Loading...</p>
+      <p class="repository-status" data-empty-state hidden>No records found.</p>
+
+      <div class="analysis-grid" data-analysis-grid hidden>
+        {analyses.map((item) => (
+          <article class="analysis-card" data-category={item.category}>
+            {item.image ? (
+              <img src={item.image} alt={`${item.prediction} MRI scan`} />
+            ) : (
+              <div class="scan-preview" aria-label="MRI scan unavailable"></div>
+            )}
+
+            <div class="analysis-card-body">
+              <h2>{item.prediction}</h2>
+              <p>{item.confidence} confidence</p>
+              <p>{item.filename}</p>
+              <p>{item.date}</p>
+              <button
+                type="button"
+                class="details-link"
+                data-detail-target={item.id}>
+                View Details &gt;
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Container>
+
+<dialog class="analysis-dialog" data-analysis-modal>
+  <div class="analysis-dialog-card">
+    <button type="button" class="modal-close" data-modal-close>
+      Close
+    </button>
+
+    {analyses.map((item) => (
+      <article class="analysis-detail" data-analysis-detail={item.id} hidden>
+        <header class="detail-header">
+          <p>Prediction</p>
+          <h2>{item.prediction}</h2>
+          <span></span>
+        </header>
+
+        <div class="detail-layout">
+          <figure class="detail-scan">
+            {item.image ? (
+              <img
+                src={item.image}
+                alt={`${item.prediction} MRI scan detail`}
+              />
+            ) : (
+              <div
+                class="detail-scan-frame"
+                aria-label="MRI scan unavailable">
+              </div>
+            )}
+            <figcaption>
+              <span>{item.filename}</span>
+              <span>{item.date}</span>
+            </figcaption>
+          </figure>
+
+          <section class="confidence-panel">
+            <p class="panel-eyebrow">Confidence Scores</p>
+            <div class="score-list">
+              {item.scores.map((score) => (
+                <div class="score-item">
+                  <div class="score-meta">
+                    <span>{score.label}</span>
+                    <span>{score.value}%</span>
+                  </div>
+                  <div class="score-track">
+                    <span
+                      class:list={[
+                        "score-fill",
+                        score.highlight && "score-fill-highlight",
+                      ]}
+                      style={`width: ${score.value}%`}>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <section class="insight-card">
+          <header>
+            <p class="panel-eyebrow">Insights</p>
+            <h3>{item.insightTitle}</h3>
+            <p>{item.insightSubtitle}</p>
+          </header>
+
+          <div class="insight-divider"></div>
+
+          <div class="insight-copy">
+            <h4>Description</h4>
+            {item.description.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+
+          <div class="signs-block">
+            <h4>{item.signsTitle}</h4>
+            <ul>
+              {item.signs.map((sign) => <li>{sign}</li>)}
+            </ul>
+          </div>
+
+          <div class="insight-copy">
+            <h4>Health Recommendations</h4>
+            <p>{item.recommendation}</p>
+          </div>
+
+          <p class="detail-notice">{item.notice}</p>
+        </section>
+      </article>
+    ))}
+  </div>
+</dialog>
+
+<script>
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-filter]")
+  );
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-category]")
+  );
+  const grid = document.querySelector<HTMLElement>("[data-analysis-grid]");
+  const loadingState =
+    document.querySelector<HTMLElement>("[data-loading-state]");
+  const emptyState = document.querySelector<HTMLElement>("[data-empty-state]");
+  const detailButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-detail-target]")
+  );
+  const modal = document.querySelector<HTMLDialogElement>(
+    "[data-analysis-modal]"
+  );
+  const detailPanels = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-analysis-detail]")
+  );
+  const closeButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-modal-close]")
+  );
+
+  const setActiveButton = (activeFilter: string) => {
+    buttons.forEach((button) => {
+      button.classList.toggle(
+        "active",
+        button.getAttribute("data-filter") === activeFilter
+      );
+    });
+  };
+
+  const renderRepository = (filter = "All") => {
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const category = card.getAttribute("data-category");
+      const shouldShow = filter === "All" || category === filter;
+
+      card.hidden = !shouldShow;
+
+      if (shouldShow) {
+        visibleCount += 1;
+      }
+    });
+
+    if (loadingState) {
+      loadingState.hidden = true;
+    }
+
+    if (grid) {
+      grid.hidden = visibleCount === 0;
+    }
+
+    if (emptyState) {
+      emptyState.hidden = visibleCount > 0;
+      emptyState.textContent =
+        cards.length === 0
+          ? "No records yet. Past MRI analysis records will appear here once available."
+          : `No records found for ${filter}.`;
+    }
+
+    setActiveButton(filter);
+  };
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      renderRepository(button.getAttribute("data-filter") ?? "All");
+    });
+  });
+
+  const closeModal = () => {
+    modal?.close();
+    document.body.style.overflow = "";
+    document.documentElement.classList.remove("repository-modal-open");
+  };
+
+  detailButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetId = button.getAttribute("data-detail-target");
+
+      detailPanels.forEach((panel) => {
+        panel.hidden = panel.getAttribute("data-analysis-detail") !== targetId;
+      });
+
+      if (modal?.showModal) {
+        modal.showModal();
+      } else {
+        modal?.setAttribute("open", "");
+      }
+
+      document.body.style.overflow = "hidden";
+      document.documentElement.classList.add("repository-modal-open");
+    });
+  });
+
+  closeButtons.forEach((button) => {
+    button.addEventListener("click", closeModal);
+  });
+
+  modal?.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  modal?.addEventListener("close", () => {
+    document.documentElement.classList.remove("repository-modal-open");
+  });
+
+  window.setTimeout(() => renderRepository("All"), 250);
+</script>
+<style>
+  .repository-content {
+    color: rgb(71 85 105);
+    font-size: 1rem;
+    line-height: 1.8;
+    margin: 4rem auto 0;
+  }
+
+  .filter-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .filter-row button {
+    border: 1px solid #0f172a;
+    border-radius: 999px;
+    background: white;
+    color: #0f172a;
+    padding: 10px 22px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .filter-row button.active,
+  .filter-row button:hover {
+    background: #0f172a;
+    color: white;
+  }
+
+  .repository-results {
+    min-height: 52vh;
+  }
+
+  .repository-status {
+    margin: 4rem 0 0;
+    text-align: center;
+    color: rgb(15 23 42);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    max-width: 1240px;
+    margin: 3rem auto 0;
+  }
+
+  .analysis-card {
+    display: flex;
+    min-height: 330px;
+    flex-direction: column;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: white;
+    color: rgb(15 23 42);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .analysis-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(15, 23, 42, 0.22);
+    box-shadow: 0 24px 58px rgba(15, 23, 42, 0.12);
+  }
+
+  .analysis-card img,
+  .scan-preview {
+    width: 100%;
+    height: 176px;
+    object-fit: cover;
+    object-position: center;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .scan-preview {
+    display: block;
+  }
+
+  .analysis-card-body {
+    display: flex;
+    min-height: 152px;
+    flex: 1;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .analysis-card h2 {
+    margin: 0 0 0.35rem;
+    color: rgb(15 23 42);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .analysis-card p {
+    margin: 0;
+    color: rgb(71 85 105);
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .details-link {
+    display: inline-flex;
+    align-self: flex-end;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin-top: auto;
+    color: rgb(15 23 42);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .details-link:hover {
+    color: rgb(71 85 105);
+  }
+
+  .analysis-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(1040px, calc(100vw - 40px));
+    max-height: min(88vh, 920px);
+    border: 0;
+    border-radius: 24px;
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+    background: transparent;
+    transform: translate(-50%, -50%);
+    color: rgb(15 23 42);
+  }
+
+  .analysis-dialog::backdrop {
+    background: rgba(3, 7, 18, 0.78);
+    backdrop-filter: blur(8px);
+  }
+
+  .analysis-dialog-card {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 28px 90px rgba(15, 23, 42, 0.24);
+    padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    border: 1px solid #0f172a;
+    border-radius: 999px;
+    background: white;
+    color: #0f172a;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .modal-close:hover {
+    background: #0f172a;
+    color: white;
+  }
+
+  .detail-header {
+    text-align: center;
+    margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+  }
+
+  .detail-header p,
+  .panel-eyebrow {
+    margin: 0;
+    color: rgb(71 85 105);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .detail-header h2 {
+    margin: 0.35rem 0 0;
+    color: rgb(15 23 42);
+    font-size: clamp(2.15rem, 5vw, 3.75rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .detail-header span {
+    display: block;
+    width: 50px;
+    height: 2px;
+    margin: 1rem auto 0;
+    background: rgb(15 23 42);
+  }
+
+  .detail-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.1fr);
+    gap: clamp(2rem, 6vw, 4.5rem);
+    align-items: start;
+  }
+
+  .detail-scan {
+    margin: 0;
+    text-align: center;
+  }
+
+  .detail-scan img,
+  .detail-scan-frame {
+    width: 100%;
+    min-height: 280px;
+    max-height: 310px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    object-fit: cover;
+    background: #f8fafc;
+  }
+
+  .detail-scan-frame {
+    display: block;
+  }
+
+  .detail-scan figcaption {
+    display: grid;
+    gap: 0.15rem;
+    margin-top: 1rem;
+    color: rgb(71 85 105);
+    font-size: 0.8rem;
+  }
+
+  .confidence-panel {
+    padding-top: 0.25rem;
+  }
+
+  .score-list {
+    display: grid;
+    gap: 1.35rem;
+    margin-top: 1.5rem;
+  }
+
+  .score-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    color: rgb(15 23 42);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .score-track {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e2e8f0;
+  }
+
+  .score-fill {
+    display: block;
+    height: 100%;
+    min-width: 2px;
+    border-radius: inherit;
+    background: rgb(100 116 139);
+  }
+
+  .score-fill-highlight {
+    background: rgb(15 23 42);
+    box-shadow: 0 0 18px rgba(15, 23, 42, 0.18);
+  }
+
+  .insight-card {
+    margin: clamp(2rem, 5vw, 3rem) auto 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #f8fafc;
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .insight-card header {
+    text-align: center;
+  }
+
+  .insight-card h3 {
+    margin: 1rem 0 0.35rem;
+    color: rgb(15 23 42);
+    font-size: 1.45rem;
+    font-weight: 700;
+  }
+
+  .insight-card header p:last-child {
+    margin: 0;
+    color: rgb(71 85 105);
+  }
+
+  .insight-divider {
+    height: 1px;
+    margin: 1.5rem 0;
+    background: #e2e8f0;
+  }
+
+  .insight-copy h4,
+  .signs-block h4 {
+    margin: 0 0 0.85rem;
+    color: rgb(15 23 42);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .insight-copy p {
+    margin: 0 0 1rem;
+    color: rgb(71 85 105);
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .signs-block {
+    margin: 1.5rem 0;
+  }
+
+  .signs-block ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .signs-block li {
+    position: relative;
+    padding-left: 1rem;
+    color: rgb(71 85 105);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .signs-block li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgb(15 23 42);
+  }
+
+  .detail-notice {
+    margin: 1.5rem 0 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: white;
+    padding: 1rem;
+    color: rgb(51 65 85);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 1000px) {
+    .analysis-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .analysis-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .analysis-dialog {
+      width: calc(100vw - 24px);
+      max-height: 90vh;
+    }
+
+    .detail-layout,
+    .signs-block ul {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-close {
+      position: static;
+      margin: 0 0 1.5rem auto;
+      display: block;
+    }
+
+    .detail-header {
+      margin-bottom: 1.75rem;
+    }
+  }
+</style>
