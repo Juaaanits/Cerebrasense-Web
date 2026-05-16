@@ -8,66 +8,104 @@ const filters = ["All", "Glioma", "No Tumor", "Pituitary", "Meningioma"];
 
 const noTumorDetails = {
   insightTitle: "No Tumor",
-  insightSubtitle: "No abnormal growth detected",
+  insightSubtitle: "No tumor-like pattern detected by the model",
   description: [
-    "The brain scan shows no signs of tumor or abnormal growth. This indicates healthy brain tissue with normal cellular structure and function.",
-    "A healthy brain efficiently processes information, maintains proper blood flow, and coordinates essential functions including movement, cognition, memory, and sensory processing.",
+    "The model output is most consistent with the no-tumor class. In this prototype, that means the uploaded image did not show the learned visual patterns associated with glioma, meningioma, or pituitary tumor classes.",
+    "This does not rule out every neurological condition or replace a radiology report. Brain tumor symptoms can vary by size, location, and growth rate, so persistent headaches, seizures, vision changes, weakness, balance issues, or cognitive changes still need clinical review.",
   ],
-  signsTitle: "Signs of Brain Health",
+  signsTitle: "Model Interpretation Notes",
   signs: [
-    "Normal brain tissue structure",
-    "Clear neural pathways",
-    "Normal ventricle size",
-    "Healthy white matter",
-    "Clear cerebrospinal fluid",
-    "Healthy blood vessel patterns",
-    "Proper brain symmetry",
-    "Intact blood-brain barrier",
-    "Normal gray matter density",
-    "No mass effects or swelling",
+    "No learned tumor-class pattern was dominant",
+    "Low relative probability for glioma class",
+    "Low relative probability for meningioma class",
+    "Low relative probability for pituitary class",
+    "Result depends on image quality and preprocessing",
+    "Clinical symptoms should still guide follow-up",
+    "Radiologist interpretation remains the reference standard",
+    "Repeat imaging may be needed if symptoms persist",
   ],
   recommendation:
-    "No treatment is required as no abnormal growths were detected. Continue routine check-ups and consult healthcare professionals for proper medical guidance.",
+    "Keep the scan result with the patient's clinical record and seek professional interpretation if symptoms are present, worsening, or unexplained. This model should only support triage or educational review.",
   notice:
-    "Great news: This information is for educational purposes only and should not replace professional medical advice.",
+    "Important: A no-tumor model result is not a medical clearance. It is an AI classification output and should not replace professional medical advice.",
 };
 
 const gliomaDetails = {
   insightTitle: "Glioma",
   insightSubtitle: "Tumor-like pattern detected",
   description: [
-    "The scan pattern is most consistent with the glioma class in the current model output. Glioma predictions usually indicate image features that resemble abnormal tissue growth originating from glial cells.",
-    "This result should be treated as a research prototype output only. A qualified medical specialist must review MRI findings before any diagnostic decision is made.",
+    "The model output is most consistent with the glioma class. Gliomas are tumors that arise from glial cells or related supportive cells in the brain or spinal cord, and they can vary widely in grade, behavior, and treatment approach.",
+    "Clinical evaluation usually depends on MRI interpretation, tumor location, neurologic symptoms, and when appropriate, tissue and molecular testing. Symptoms can include headache, seizure, weakness, speech difficulty, balance problems, or cognitive and behavior changes, but symptoms are not specific to glioma.",
   ],
   signsTitle: "Observed Model Indicators",
   signs: [
-    "Localized abnormal intensity pattern",
-    "Tumor-like texture response",
-    "Irregular tissue contrast",
-    "Spatial features aligned with glioma class",
-    "High model confidence for glioma",
-    "Low probability for non-tumor class",
-    "Pattern requires clinical review",
-    "External validation still required",
+    "Tumor-like image texture aligned with glioma class",
+    "Abnormal tissue-intensity pattern in learned features",
+    "Probability distribution favors glioma over other classes",
+    "Glioma class can include different biological subtypes",
+    "Tumor grade cannot be determined from this model alone",
+    "Location and mass effect require radiology review",
+    "Symptoms and clinical history must be correlated",
+    "External validation is still required",
   ],
   recommendation:
-    "Forward the scan and model output to a qualified healthcare professional for proper radiology review, clinical context, and follow-up testing if needed.",
+    "Forward the scan and model output to a radiologist, neurologist, or neurosurgical team for formal interpretation and follow-up planning. Urgent symptoms such as new seizure, sudden weakness, severe worsening headache, or confusion require prompt medical care.",
   notice:
     "Important: This is not a clinical diagnosis. CerebraSense is a research and educational prototype.",
 };
 
+const meningiomaDetails = {
+  insightTitle: "Meningioma",
+  insightSubtitle: "Meningeal tumor-like pattern detected",
+  description: [
+    "The model output is most consistent with the meningioma class. Meningiomas arise from the meninges, the protective membranes around the brain and spinal cord. Many are slow-growing and benign, but some can cause problems by pressing on nearby brain, nerve, or vascular structures.",
+    "Symptoms depend strongly on location and may include headaches, vision changes, hearing changes, seizures, weakness, numbness, or cognitive changes. Some meningiomas are found incidentally and are monitored with repeat imaging rather than treated immediately.",
+  ],
+  signsTitle: "Observed Model Indicators",
+  signs: [
+    "Pattern aligns with meningioma class features",
+    "Possible extra-axial or border-adjacent visual pattern",
+    "Confidence should be checked against MRI sequence quality",
+    "Location matters for symptom risk",
+    "Slow-growing tumors may be monitored",
+    "Mass effect cannot be judged by this classifier alone",
+    "Radiology review is needed for confirmation",
+    "Treatment decisions depend on size, growth, and symptoms",
+  ],
+  recommendation:
+    "Share the result with a qualified clinician for formal MRI review. If a meningioma is suspected, common next steps may include comparison with prior imaging, monitoring for growth, or referral to neurology/neurosurgery depending on symptoms and location.",
+  notice:
+    "Important: This model cannot determine whether a meningioma is benign, aggressive, growing, or clinically significant.",
+};
+
+const pituitaryDetails = {
+  insightTitle: "Pituitary",
+  insightSubtitle: "Pituitary-region tumor-like pattern detected",
+  description: [
+    "The model output is most consistent with the pituitary class. Pituitary tumors usually arise in or near the pituitary gland at the base of the brain. Many are adenomas and are not cancer, but they can affect vision, nearby structures, or hormone production.",
+    "Pituitary tumors may cause symptoms from pressure, such as headache or vision changes, or from hormone imbalance, such as menstrual changes, sexual dysfunction, fatigue, unexplained weight changes, growth changes, or symptoms related to thyroid or adrenal hormone disruption.",
+  ],
+  signsTitle: "Observed Model Indicators",
+  signs: [
+    "Pattern aligns with pituitary class features",
+    "Possible sellar or pituitary-region visual pattern",
+    "Hormone function cannot be assessed from image classification",
+    "Visual pathway involvement needs clinical assessment",
+    "Endocrine symptoms should be reviewed",
+    "MRI protocol and image plane affect reliability",
+    "Formal radiology review is needed",
+    "Endocrinology referral may be appropriate if suspected",
+  ],
+  recommendation:
+    "If the finding is clinically suspected, discuss the scan with a healthcare professional. Pituitary evaluation may require dedicated MRI review, visual field testing, and hormone blood tests guided by an endocrinologist or specialist.",
+  notice:
+    "Important: This model cannot determine hormone activity, tumor size category, or the need for treatment.",
+};
+
 const tumorDetails = {
   glioma: gliomaDetails,
-  meningioma: {
-    ...gliomaDetails,
-    insightTitle: "Meningioma",
-    insightSubtitle: "Meningioma-like pattern detected",
-  },
-  pituitary: {
-    ...gliomaDetails,
-    insightTitle: "Pituitary",
-    insightSubtitle: "Pituitary tumor-like pattern detected",
-  },
+  meningioma: meningiomaDetails,
+  pituitary: pituitaryDetails,
   notumor: noTumorDetails,
   no_tumor: noTumorDetails,
 };
