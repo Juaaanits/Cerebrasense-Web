@@ -1,13 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
 import Layout from "@/layouts/Layout.astro";
-
-const probabilities = [
-  { label: "Glioma", value: 0.1 },
-  { label: "Meningioma", value: 0.4 },
-  { label: "No Tumor", value: 99.5, highlight: true },
-  { label: "Pituitary", value: 0.0 },
-];
 ---
 
 <Layout title="Demo">
@@ -87,29 +80,11 @@ const probabilities = [
 
             <div class="result-summary">
               <p class="result-label">Predicted Diagnosis:</p>
-              <h3>No Tumor</h3>
+              <h3 data-result-diagnosis>Awaiting Result</h3>
 
               <div class="probabilities">
                 <p class="result-label">Class Probabilities:</p>
-                <div class="probability-list">
-                  {probabilities.map((item) => (
-                    <div class="probability-item">
-                      <div class="probability-meta">
-                        <span>{item.label}</span>
-                        <span>{item.value.toFixed(1)}%</span>
-                      </div>
-                      <div class="probability-track">
-                        <span
-                          class:list={[
-                            "probability-fill",
-                            item.highlight && "probability-fill-highlight",
-                          ]}
-                          style={`width: ${item.value}%`}>
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div class="probability-list" data-probability-list></div>
               </div>
             </div>
           </div>
@@ -133,12 +108,34 @@ const probabilities = [
     document.querySelector<HTMLDialogElement>("[data-analysis-result]");
   const resultFileName =
     document.querySelector<HTMLElement>("[data-result-file-name]");
+  const resultDiagnosis =
+    document.querySelector<HTMLElement>("[data-result-diagnosis]");
+  const probabilityList =
+    document.querySelector<HTMLElement>("[data-probability-list]");
   const resultCloseButton =
     document.querySelector<HTMLButtonElement>("[data-result-close]");
 
   const allowedTypes = ["image/jpeg", "image/png"];
   let selectedFile: File | null = null;
   let isAnalyzing = false;
+
+  type AnalysisResponse = {
+    analysis: {
+      predicted_label: string;
+      confidence: number;
+      probabilities: Record<string, number>;
+    };
+  };
+
+  const labelMap: Record<string, string> = {
+    glioma: "Glioma",
+    meningioma: "Meningioma",
+    notumor: "No Tumor",
+    no_tumor: "No Tumor",
+    pituitary: "Pituitary",
+  };
+
+  const formatLabel = (label: string) => labelMap[label] ?? label;
 
   const setError = (message: string) => {
     if (!errorMessage) {
@@ -163,7 +160,47 @@ const probabilities = [
     document.body.style.overflow = "";
   };
 
-  const showAnalysisResult = (file: File) => {
+  const renderProbabilities = (
+    probabilities: Record<string, number>,
+    predictedLabel: string,
+  ) => {
+    if (!probabilityList) {
+      return;
+    }
+
+    probabilityList.textContent = "";
+
+    Object.entries(probabilities).forEach(([label, value]) => {
+      const item = document.createElement("div");
+      item.className = "probability-item";
+
+      const meta = document.createElement("div");
+      meta.className = "probability-meta";
+
+      const labelText = document.createElement("span");
+      labelText.textContent = formatLabel(label);
+
+      const valueText = document.createElement("span");
+      valueText.textContent = `${Number(value).toFixed(1)}%`;
+
+      const track = document.createElement("div");
+      track.className = "probability-track";
+
+      const fill = document.createElement("span");
+      fill.className = "probability-fill";
+      if (label === predictedLabel) {
+        fill.classList.add("probability-fill-highlight");
+      }
+      fill.style.width = `${Math.max(0, Math.min(100, Number(value)))}%`;
+
+      meta.append(labelText, valueText);
+      track.append(fill);
+      item.append(meta, track);
+      probabilityList.append(item);
+    });
+  };
+
+  const showAnalysisResult = (file: File, analysis: AnalysisResponse["analysis"]) => {
     if (!resultPanel) {
       setError("Analysis completed, but the result panel could not be shown.");
       return;
@@ -172,6 +209,12 @@ const probabilities = [
     if (resultFileName) {
       resultFileName.textContent = file.name;
     }
+
+    if (resultDiagnosis) {
+      resultDiagnosis.textContent = formatLabel(analysis.predicted_label);
+    }
+
+    renderProbabilities(analysis.probabilities, analysis.predicted_label);
 
     if (resultPanel.showModal) {
       resultPanel.showModal();
@@ -270,12 +313,26 @@ const probabilities = [
     setAnalyzingState(true);
 
     try {
-      // Temporary demo delay. Replace this with the FastAPI request later.
-      await new Promise((resolve) => window.setTimeout(resolve, 1800));
-      showAnalysisResult(file);
-    } catch {
+      const formData = new FormData();
+      formData.append("scan", file);
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = (await response.json()) as
+        | AnalysisResponse
+        | { error?: string };
+
+      if (!response.ok || !("analysis" in result)) {
+        throw new Error(result.error ?? "Analysis failed.");
+      }
+
+      showAnalysisResult(file, result.analysis);
+    } catch (error) {
       hideAnalysisResult();
-      setError("Analysis failed. Please try again.");
+      setError(error instanceof Error ? error.message : "Analysis failed. Please try again.");
     } finally {
       setAnalyzingState(false);
     }
