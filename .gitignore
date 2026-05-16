@@ -15,7 +15,13 @@ pnpm-debug.log*
 
 # environment variables
 .env
+.env.local
 .env.production
+
+# local model artifacts
+model-service/models/*.pt
+model-service/models/*.pkl
+model-service/models/*.pkl1
 
 # macOS-specific files
 .DS_Store
