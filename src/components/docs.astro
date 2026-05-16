@@ -5,281 +5,323 @@ import Sectionhead from "@/components/sectionhead.astro";
 
 <Container>
   <Sectionhead>
-    <Fragment slot="title">Development Overview</Fragment>
+    <Fragment slot="title">Development Documentation</Fragment>
     <Fragment slot="desc">
-      A deeper look into how CerebraSense was built.
+      The current CerebraSense model pipeline, training results, and deployment integration.
     </Fragment>
   </Sectionhead>
 
   <article class="development-content mx-auto mt-16 max-w-4xl">
     <section>
       <p>
-        The development of CerebraSense was grounded in a practical research
-        objective: to build a lightweight deep learning system capable of
-        classifying brain MRI scans into tumor-related categories. The system
-        was designed around accuracy, controlled experimentation, and future
-        deployment readiness.
+        CerebraSense was upgraded from the earlier lightweight 32 x 32 custom
+        CNN into a higher-resolution transfer-learning pipeline. The new
+        development phase focused on improving real-world robustness,
+        preserving the exact preprocessing steps used during training, and
+        making the deployed model easier to version and audit.
       </p>
       <p>
-        The notebook began with a structured comparison of manually implemented
-        neural network scenarios using NumPy. These experiments tested how
-        architecture depth, hidden-layer width, regularization, optimizer
-        choice, activation function, and class-sensitive training affected MRI
-        classification performance. After the dense-network experiments, the
-        development moved toward a custom convolutional neural network because
-        MRI images contain spatial patterns that are better captured through
-        convolutional feature extraction.
+        The current model is an EfficientNet-B0 classifier trained on the
+        original MRI image folders rather than flattened CSV-only pixel rows.
+        It uses 224 x 224 image inputs, moderate MRI-safe augmentation,
+        duplicate/leakage checks, class weighting, label smoothing, validation
+        macro-F1 model selection, confidence calibration, and an uncertainty
+        threshold for safer interpretation.
       </p>
-      <p>
-        The final selected model is a custom CNN trained from scratch. It does
-        not rely on a pre-trained architecture. Instead, the model uses three
-        convolutional blocks, a compact fully connected classifier, label
-        smoothing, early stopping, and learning-rate scheduling to balance
-        performance and generalization.
+      <p class="callout">
+        The model is substantially stronger than the earlier prototype, but it
+        remains a research and educational classifier. Its output is a model
+        class prediction, not a clinical diagnosis.
       </p>
+    </section>
+
+    <section>
+      <h2>Development Milestones</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Stage</th>
+              <th>Implementation</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Baseline</td>
+              <td>32 x 32 custom CNN with CSV pixel features</td>
+              <td>Fast prototype and controlled architecture testing</td>
+            </tr>
+            <tr>
+              <td>Improved pipeline</td>
+              <td>Image-folder training with 224 x 224 tensors</td>
+              <td>Preserve more visual detail from MRI scans</td>
+            </tr>
+            <tr>
+              <td>Transfer learning</td>
+              <td>EfficientNet-B0 classifier</td>
+              <td>Use a stronger pretrained visual backbone</td>
+            </tr>
+            <tr>
+              <td>Robustness</td>
+              <td>Augmentation, duplicate checks, class weighting</td>
+              <td>Reduce overfitting and improve generalization</td>
+            </tr>
+            <tr>
+              <td>Deployment</td>
+              <td>Single model bundle with preprocessing metadata</td>
+              <td>Keep inference consistent with notebook training</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section>
       <h2>Dataset & Preprocessing</h2>
       <p>
-        The notebook uses the Brain Tumor MRI Dataset by Masoud Nickparvar from
-        Kaggle. The dataset supports multi-class brain MRI classification and
-        is organized into four classes: glioma, meningioma, no tumor, and
-        pituitary tumor.
+        The project still uses the Brain Tumor MRI Dataset by Masoud
+        Nickparvar. The model classifies MRI images into four classes:
+        glioma, meningioma, no tumor, and pituitary tumor.
       </p>
       <p>
-        In the current implementation, the dataset is stored in separate
-        training and testing folders. The training folder is converted into
-        <code>brain_tumor_train.csv</code>, while the testing folder is
-        converted into <code>brain_tumor_test.csv</code>. Each image is
-        processed with the same conversion pipeline before model training.
+        The earlier CNN converted every image into a single grayscale 32 x 32
+        vector and stored it in <code>brain_tumor_train.csv</code> or
+        <code>brain_tumor_test.csv</code>. The improved model trains directly
+        from the folder structure under <code>data/brain_tumor_mri</code>,
+        which keeps the image-loading and augmentation process closer to
+        deployment.
       </p>
-      <p>During preprocessing, each MRI image is:</p>
-      <ul>
-        <li>Loaded from its class folder.</li>
-        <li>Converted to grayscale using a single intensity channel.</li>
-        <li>Resized to 32 x 32 pixels.</li>
-        <li>Flattened into 1,024 pixel features.</li>
-        <li>Stored in CSV format with the class label as the first column.</li>
-      </ul>
-      <p>The class label mapping used in the notebook is:</p>
 
+      <h3>Class Mapping</h3>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th class="numeric">Label</th>
-              <th>Class</th>
+              <th class="numeric">Index</th>
+              <th>Internal Label</th>
+              <th>Display Label</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td class="numeric">0</td>
+              <td><code>glioma</code></td>
               <td>Glioma</td>
             </tr>
             <tr>
               <td class="numeric">1</td>
+              <td><code>meningioma</code></td>
               <td>Meningioma</td>
             </tr>
             <tr>
               <td class="numeric">2</td>
+              <td><code>notumor</code></td>
               <td>No Tumor</td>
             </tr>
             <tr>
               <td class="numeric">3</td>
+              <td><code>pituitary</code></td>
               <td>Pituitary</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <p>
-        For the final CNN, the flattened pixel values are standardized using
-        <code>StandardScaler</code>. The scaled vectors are then reshaped back
-        into image tensors with shape <code>1 x 32 x 32</code> so that the CNN
-        can learn spatial features from the MRI scans.
-      </p>
-
-      <h3>Dataset Class Distribution</h3>
+      <h3>Dataset Counts</h3>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
               <th>Class</th>
               <th class="numeric">Training Images</th>
-              <th class="numeric">Percentage</th>
+              <th class="numeric">Testing Images</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Glioma</td>
               <td class="numeric">1,321</td>
-              <td class="numeric">23.1%</td>
+              <td class="numeric">300</td>
             </tr>
             <tr>
               <td>Meningioma</td>
               <td class="numeric">1,339</td>
-              <td class="numeric">23.4%</td>
+              <td class="numeric">306</td>
             </tr>
             <tr>
               <td>No Tumor</td>
               <td class="numeric">1,595</td>
-              <td class="numeric">27.9%</td>
+              <td class="numeric">405</td>
             </tr>
             <tr>
               <td>Pituitary</td>
               <td class="numeric">1,457</td>
-              <td class="numeric">25.5%</td>
+              <td class="numeric">300</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="note">Total: 5,712 training images</p>
+      <p class="note">
+        Total dataset size: 7,023 MRI images, with 5,712 training-source images
+        and 1,311 held-out testing images.
+      </p>
 
-      <h3>Training vs Testing Split</h3>
+      <h3>Improved Preprocessing</h3>
+      <ul>
+        <li>Images are loaded from the original class folders.</li>
+        <li>EXIF orientation is normalized before processing.</li>
+        <li>Images are converted to RGB for pretrained backbone compatibility.</li>
+        <li>Inputs are resized to 224 x 224 pixels.</li>
+        <li>ImageNet normalization is applied during training and inference.</li>
+        <li>The exact preprocessing settings are saved in the deployment bundle.</li>
+      </ul>
+
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>Split</th>
-              <th class="numeric">Images</th>
-              <th class="numeric">Percentage</th>
+              <th>Preprocessing Setting</th>
+              <th>Value</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Training</td>
-              <td class="numeric">5,712</td>
-              <td class="numeric">81.3%</td>
+              <td>Input Size</td>
+              <td>224 x 224</td>
             </tr>
             <tr>
-              <td>Testing</td>
-              <td class="numeric">1,311</td>
-              <td class="numeric">18.7%</td>
+              <td>Color Mode</td>
+              <td>RGB tensor</td>
+            </tr>
+            <tr>
+              <td>Normalization Mean</td>
+              <td><code>[0.485, 0.456, 0.406]</code></td>
+            </tr>
+            <tr>
+              <td>Normalization Std</td>
+              <td><code>[0.229, 0.224, 0.225]</code></td>
+            </tr>
+            <tr>
+              <td>Validation Split</td>
+              <td>Stratified split from cleaned training data</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="note">Total Dataset: 7,023 MRI images</p>
+    </section>
 
+    <section>
+      <h2>Data Quality Controls</h2>
       <p>
-        The final model also creates a stratified validation split from the
-        training CSV. This reserves 20% of the training data for validation
-        while preserving the original class proportions.
+        The improved notebook adds image-manifest logic before training. Each
+        image path is recorded with its label, split, file hash, and a simple
+        perceptual hash for review.
+      </p>
+      <ul>
+        <li>Exact duplicate training files are removed.</li>
+        <li>Exact train/test leakage is checked by SHA-256 hash.</li>
+        <li>Large same-class perceptual-hash groups are reported for review.</li>
+        <li>The held-out testing folder remains untouched during model selection.</li>
+      </ul>
+      <p>
+        These checks do not make the dataset clinically complete, but they make
+        the current experiment more defensible than directly training on every
+        file without leakage review.
+      </p>
+    </section>
+
+    <section>
+      <h2>Augmentation</h2>
+      <p>
+        The improved model uses moderate augmentation so the model sees
+        plausible MRI variation without heavily distorting anatomy.
       </p>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>Internal Split</th>
-              <th class="numeric">Images</th>
+              <th>Augmentation</th>
+              <th>Configuration</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Training Subset</td>
-              <td class="numeric">4,569</td>
+              <td>Rotation</td>
+              <td>Up to 10 degrees</td>
             </tr>
             <tr>
-              <td>Validation Subset</td>
-              <td class="numeric">1,143</td>
+              <td>Translation</td>
+              <td>Up to 4 percent shift</td>
+            </tr>
+            <tr>
+              <td>Scale</td>
+              <td>0.94 to 1.06</td>
+            </tr>
+            <tr>
+              <td>Brightness / Contrast</td>
+              <td>Small controlled jitter</td>
+            </tr>
+            <tr>
+              <td>Blur</td>
+              <td>Light Gaussian blur applied occasionally</td>
             </tr>
           </tbody>
         </table>
       </div>
-
-      <h3>Dataset Balance Analysis</h3>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Measure</th>
-              <th class="numeric">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Largest Training Class</td>
-              <td class="numeric">1,595 images</td>
-            </tr>
-            <tr>
-              <td>Smallest Training Class</td>
-              <td class="numeric">1,321 images</td>
-            </tr>
-            <tr>
-              <td>Imbalance Ratio</td>
-              <td class="numeric">1.21</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p>
-        The class distribution is relatively balanced. The no tumor class has
-        the largest number of training samples, while the glioma class has the
-        smallest. Since the imbalance ratio is only 1.21, the dataset is
-        suitable for baseline experimentation without severe imbalance
-        correction. Earlier notebook scenarios explored class weighting, but
-        the final CNN relies mainly on stratified splitting, label smoothing,
-        dropout, and weight decay for generalization.
-      </p>
     </section>
 
     <section>
       <h2>Model Architecture</h2>
       <p>
-        The final selected model is a custom convolutional neural network for
-        four-class brain MRI classification. The input layer receives a
-        grayscale MRI image reshaped as a <code>1 x 32 x 32</code> tensor.
+        The current CerebraSense classifier uses EfficientNet-B0 as the visual
+        backbone. The pretrained classifier head is replaced with a custom
+        four-class output layer for the MRI categories.
       </p>
-      <p>The CNN contains three convolutional blocks:</p>
-      <ul>
-        <li>
-          Convolution Block 1: <code>Conv2d(1, 32, kernel_size=3, padding=1)</code>,
-          ReLU activation, and 2 x 2 max pooling.
-        </li>
-        <li>
-          Convolution Block 2: <code>Conv2d(32, 64, kernel_size=3, padding=1)</code>,
-          ReLU activation, and 2 x 2 max pooling.
-        </li>
-        <li>
-          Convolution Block 3: <code>Conv2d(64, 128, kernel_size=3, padding=1)</code>,
-          ReLU activation, and 2 x 2 max pooling.
-        </li>
-      </ul>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Current Implementation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Backbone</td>
+              <td>EfficientNet-B0</td>
+            </tr>
+            <tr>
+              <td>Classifier</td>
+              <td>Dropout 0.30, then linear layer to 4 logits</td>
+            </tr>
+            <tr>
+              <td>Output</td>
+              <td>Glioma, meningioma, no tumor, pituitary</td>
+            </tr>
+            <tr>
+              <td>Deployment Version</td>
+              <td><code>efficientnet-b0-transfer-calibrated-v1</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        After the convolutional blocks, the feature maps are flattened and
-        passed through a compact classifier:
-      </p>
-      <ul>
-        <li>
-          Fully Connected Layer: 2,048 input features to 128 neurons with ReLU
-          activation.
-        </li>
-        <li>Dropout Layer: dropout rate of 0.3.</li>
-        <li>
-          Output Layer: 4 logits corresponding to glioma, meningioma, no tumor,
-          and pituitary.
-        </li>
-      </ul>
-      <p>
-        The model outputs raw logits during training. Softmax is applied during
-        evaluation and inference to convert logits into class probabilities.
+        The notebook supports alternative backbones such as ResNet18 and
+        MobileNetV3 Small, but EfficientNet-B0 is the selected deployment
+        model because it delivered strong accuracy while remaining compact
+        enough for the current model service.
       </p>
     </section>
 
     <section>
-      <h2>Training & Optimization</h2>
+      <h2>Training Configuration</h2>
       <p>
-        Several strategies were used to improve learning stability and reduce
-        overfitting.
+        The model was trained with a stronger optimization setup than the
+        earlier prototype. The validation checkpoint is selected by macro F1,
+        which helps prevent the best model from favoring only the easiest or
+        largest class.
       </p>
-      <p>
-        The dataset was standardized using <code>StandardScaler</code>, fitted
-        only on the training data and reused for validation, testing, and
-        inference. A stratified 80/20 split was applied to the training CSV to
-        create the training and validation subsets.
-      </p>
-      <p>The final CNN was trained using PyTorch with the following configuration:</p>
       <div class="table-scroll">
         <table>
           <thead>
@@ -291,11 +333,11 @@ import Sectionhead from "@/components/sectionhead.astro";
           <tbody>
             <tr>
               <td>Optimizer</td>
-              <td>Adam</td>
+              <td>AdamW</td>
             </tr>
             <tr>
-              <td>Learning Rate</td>
-              <td>0.001</td>
+              <td>Initial Learning Rate</td>
+              <td>3e-4</td>
             </tr>
             <tr>
               <td>Weight Decay</td>
@@ -303,35 +345,23 @@ import Sectionhead from "@/components/sectionhead.astro";
             </tr>
             <tr>
               <td>Loss Function</td>
-              <td>Cross-entropy with label smoothing</td>
+              <td>Cross-entropy with class weights and label smoothing</td>
             </tr>
             <tr>
               <td>Label Smoothing</td>
-              <td>0.1</td>
+              <td>0.05</td>
             </tr>
             <tr>
               <td>Batch Size</td>
-              <td>64</td>
+              <td>32</td>
             </tr>
             <tr>
-              <td>Maximum Epochs</td>
-              <td>50</td>
+              <td>Requested Epochs</td>
+              <td>30</td>
             </tr>
             <tr>
-              <td>Early Stopping Patience</td>
-              <td>6 epochs</td>
-            </tr>
-            <tr>
-              <td>Scheduler</td>
-              <td>ReduceLROnPlateau</td>
-            </tr>
-            <tr>
-              <td>Scheduler Factor</td>
-              <td>0.5</td>
-            </tr>
-            <tr>
-              <td>Scheduler Patience</td>
-              <td>2 epochs</td>
+              <td>Model Selection</td>
+              <td>Validation macro F1, with accuracy as a secondary signal</td>
             </tr>
             <tr>
               <td>Random Seed</td>
@@ -340,54 +370,36 @@ import Sectionhead from "@/components/sectionhead.astro";
           </tbody>
         </table>
       </div>
-      <p>
-        Label smoothing was added to reduce overconfident predictions,
-        especially for visually similar tumor classes. Adam handled adaptive
-        gradient updates, while weight decay discouraged overly large weights.
-        Dropout in the dense classifier further reduced overfitting.
-      </p>
-      <p>
-        The learning rate scheduler monitored validation loss and reduced the
-        learning rate when improvement slowed. Early stopping halted training
-        when validation loss failed to improve for six consecutive epochs. The
-        best validation-loss checkpoint was saved as
-        <code>best_cnn_label_smoothing1.pt</code> and reloaded before final test
-        evaluation.
-      </p>
-      <p>After evaluation, the deployment-ready artifacts were saved:</p>
-      <ul>
-        <li><code>cnn_model1.pt</code> for the trained CNN weights.</li>
-        <li><code>scaler.pkl1</code> for the fitted standardization pipeline.</li>
-        <li>
-          <code>metadata.pkl1</code> for image size, class count, and class
-          mapping.
-        </li>
-      </ul>
     </section>
 
     <section>
-      <h2>Evaluation Metrics</h2>
+      <h2>Evaluation Results</h2>
       <p>
-        The final CNN achieved strong performance on the unseen test set. It
-        reached a test accuracy of 97.33%, correctly classifying 1,276 out of
-        1,311 MRI images.
-      </p>
-      <p>
-        The best observed validation accuracy during training was 96.33%, while
-        the selected best-loss checkpoint evaluated at approximately 97.33% on
-        the test set. The small difference between validation and test
-        performance suggests that the model generalized well under the current
-        dataset split.
-      </p>
-      <p>
-        The strongest class-level performance appeared in the no tumor and
-        pituitary classes, both of which reached perfect recall on the test
-        set. Most remaining errors occurred between glioma and meningioma,
-        which is consistent with the notebook's observation that these classes
-        can share similar visual characteristics.
+        The improved model exceeded the previous 97.33 percent CNN benchmark.
+        It reached 98.93 percent accuracy and 98.89 percent macro F1 on the
+        held-out test folder.
       </p>
 
-      <h3>Confusion Matrix</h3>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <span>Validation Accuracy</span>
+          <strong>98.90%</strong>
+        </div>
+        <div class="metric-card">
+          <span>Validation Macro F1</span>
+          <strong>98.88%</strong>
+        </div>
+        <div class="metric-card">
+          <span>Test Accuracy</span>
+          <strong>98.93%</strong>
+        </div>
+        <div class="metric-card">
+          <span>Test Macro F1</span>
+          <strong>98.89%</strong>
+        </div>
+      </div>
+
+      <h3>Validation Confusion Matrix</h3>
       <div class="table-scroll">
         <table>
           <thead>
@@ -402,23 +414,23 @@ import Sectionhead from "@/components/sectionhead.astro";
           <tbody>
             <tr>
               <td>Glioma</td>
-              <td class="numeric">284</td>
-              <td class="numeric">16</td>
+              <td class="numeric">192</td>
+              <td class="numeric">6</td>
               <td class="numeric">0</td>
               <td class="numeric">0</td>
             </tr>
             <tr>
               <td>Meningioma</td>
-              <td class="numeric">8</td>
-              <td class="numeric">287</td>
-              <td class="numeric">8</td>
-              <td class="numeric">3</td>
+              <td class="numeric">1</td>
+              <td class="numeric">198</td>
+              <td class="numeric">0</td>
+              <td class="numeric">1</td>
             </tr>
             <tr>
               <td>No Tumor</td>
+              <td class="numeric">1</td>
               <td class="numeric">0</td>
-              <td class="numeric">0</td>
-              <td class="numeric">405</td>
+              <td class="numeric">202</td>
               <td class="numeric">0</td>
             </tr>
             <tr>
@@ -426,42 +438,58 @@ import Sectionhead from "@/components/sectionhead.astro";
               <td class="numeric">0</td>
               <td class="numeric">0</td>
               <td class="numeric">0</td>
-              <td class="numeric">300</td>
+              <td class="numeric">216</td>
             </tr>
           </tbody>
         </table>
       </div>
 
+      <h3>Test Confusion Matrix</h3>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>Metric</th>
-              <th class="numeric">Value</th>
+              <th>True Label</th>
+              <th class="numeric">Predicted Glioma</th>
+              <th class="numeric">Predicted Meningioma</th>
+              <th class="numeric">Predicted No Tumor</th>
+              <th class="numeric">Predicted Pituitary</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Overall Accuracy</td>
-              <td class="numeric">97.33%</td>
+              <td>Glioma</td>
+              <td class="numeric">294</td>
+              <td class="numeric">6</td>
+              <td class="numeric">0</td>
+              <td class="numeric">0</td>
             </tr>
             <tr>
-              <td>Correct Predictions</td>
-              <td class="numeric">1,276</td>
+              <td>Meningioma</td>
+              <td class="numeric">2</td>
+              <td class="numeric">303</td>
+              <td class="numeric">0</td>
+              <td class="numeric">1</td>
             </tr>
             <tr>
-              <td>Misclassifications</td>
-              <td class="numeric">35</td>
+              <td>No Tumor</td>
+              <td class="numeric">4</td>
+              <td class="numeric">0</td>
+              <td class="numeric">401</td>
+              <td class="numeric">0</td>
             </tr>
             <tr>
-              <td>Total Test Samples</td>
-              <td class="numeric">1,311</td>
+              <td>Pituitary</td>
+              <td class="numeric">0</td>
+              <td class="numeric">1</td>
+              <td class="numeric">0</td>
+              <td class="numeric">299</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h3>Classification Report</h3>
+      <h3>Per-Class Test Metrics</h3>
       <div class="table-scroll">
         <table>
           <thead>
@@ -475,108 +503,195 @@ import Sectionhead from "@/components/sectionhead.astro";
           </thead>
           <tbody>
             <tr>
-              <td>0 - Glioma</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">0.95</td>
-              <td class="numeric">0.96</td>
+              <td>Glioma</td>
+              <td class="numeric">98.00%</td>
+              <td class="numeric">98.00%</td>
+              <td class="numeric">98.00%</td>
               <td class="numeric">300</td>
             </tr>
             <tr>
-              <td>1 - Meningioma</td>
-              <td class="numeric">0.95</td>
-              <td class="numeric">0.94</td>
-              <td class="numeric">0.94</td>
+              <td>Meningioma</td>
+              <td class="numeric">97.74%</td>
+              <td class="numeric">99.02%</td>
+              <td class="numeric">98.38%</td>
               <td class="numeric">306</td>
             </tr>
             <tr>
-              <td>2 - No Tumor</td>
-              <td class="numeric">0.98</td>
-              <td class="numeric">1.00</td>
-              <td class="numeric">0.99</td>
+              <td>No Tumor</td>
+              <td class="numeric">100.00%</td>
+              <td class="numeric">99.01%</td>
+              <td class="numeric">99.50%</td>
               <td class="numeric">405</td>
             </tr>
             <tr>
-              <td>3 - Pituitary</td>
-              <td class="numeric">0.99</td>
-              <td class="numeric">1.00</td>
-              <td class="numeric">1.00</td>
+              <td>Pituitary</td>
+              <td class="numeric">99.67%</td>
+              <td class="numeric">99.67%</td>
+              <td class="numeric">99.67%</td>
               <td class="numeric">300</td>
             </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Confidence Calibration & Uncertainty</h2>
+      <p>
+        The improved model uses temperature scaling to calibrate softmax
+        confidence. This helps the application treat low-confidence predictions
+        more carefully rather than presenting every output as equally reliable.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
             <tr>
-              <td>Accuracy</td>
-              <td class="numeric">-</td>
-              <td class="numeric">-</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">1,311</td>
+              <th>Calibration Measure</th>
+              <th class="numeric">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Validation NLL Before Calibration</td>
+              <td class="numeric">0.0656</td>
             </tr>
             <tr>
-              <td>Macro Avg</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">1,311</td>
+              <td>Validation NLL After Calibration</td>
+              <td class="numeric">0.0381</td>
             </tr>
             <tr>
-              <td>Weighted Avg</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">0.97</td>
-              <td class="numeric">1,311</td>
+              <td>Learned Temperature</td>
+              <td class="numeric">0.6293</td>
+            </tr>
+            <tr>
+              <td>Confidence Threshold</td>
+              <td class="numeric">70%</td>
+            </tr>
+            <tr>
+              <td>Accepted Test Coverage</td>
+              <td class="numeric">99.62%</td>
+            </tr>
+            <tr>
+              <td>Accepted-Only Test Accuracy</td>
+              <td class="numeric">99.08%</td>
+            </tr>
+            <tr>
+              <td>Uncertain Test Samples</td>
+              <td class="numeric">5 of 1,311</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Deployment Artifacts</h2>
+      <p>
+        The improved notebook saves a single deployment bundle so the web
+        service does not need to manually combine separate weights,
+        preprocessing metadata, class mappings, and calibration values.
+      </p>
+      <ul class="artifact-list">
+        <li><code>improved_artifacts/best_transfer_model.pt</code></li>
+        <li><code>improved_artifacts/cerebrasense_improved_bundle.pt</code></li>
+        <li><code>improved_artifacts/preprocess_config.json</code></li>
+        <li><code>improved_artifacts/training_report.json</code></li>
+        <li><code>improved_artifacts/calibration_summary.json</code></li>
+        <li><code>improved_artifacts/training_curves_improved.png</code></li>
+      </ul>
+      <p>
+        The web model service now uses
+        <code>model-service/models/cerebrasense_improved_bundle.pt</code>.
+        The older files <code>cnn_model1.pt</code>, <code>scaler.pkl1</code>,
+        and <code>metadata.pkl1</code> remain available as previous-model
+        artifacts, but they are no longer the active inference path.
+      </p>
+    </section>
+
+    <section>
+      <h2>Web Integration</h2>
+      <p>
+        The CerebraSense web application was updated so the deployment path
+        matches the improved notebook pipeline.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>model-service/app/model.py</code></td>
+              <td>Loads the improved bundle and reconstructs EfficientNet-B0.</td>
+            </tr>
+            <tr>
+              <td><code>model-service/app/preprocess.py</code></td>
+              <td>Uses 224 x 224 RGB/ImageNet preprocessing.</td>
+            </tr>
+            <tr>
+              <td><code>model-service/app/main.py</code></td>
+              <td>Applies temperature scaling and returns uncertainty fields.</td>
+            </tr>
+            <tr>
+              <td><code>model-service/app/schemas.py</code></td>
+              <td>Adds display label, uncertainty state, and threshold fields.</td>
+            </tr>
+            <tr>
+              <td><code>model-service/requirements.txt</code></td>
+              <td>Adds <code>torchvision</code> for EfficientNet support.</td>
+            </tr>
+            <tr>
+              <td><code>src/pages/api/analyze.ts</code></td>
+              <td>Forwards the new model response fields to the frontend.</td>
+            </tr>
+            <tr>
+              <td><code>src/pages/demo.astro</code></td>
+              <td>Displays calibrated confidence scores and uncertainty notice.</td>
+            </tr>
+            <tr>
+              <td><code>src/pages/types/analysis.ts</code></td>
+              <td>Updates TypeScript types for the new response shape.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
+      <h3>Endpoint Verification</h3>
       <p>
-        Overall, the final CNN is accurate, compact, and suitable as the
-        current best model for CerebraSense. Its errors are concentrated in the
-        most visually similar tumor categories, while the non-tumor and
-        pituitary classes are separated clearly in the test results.
+        The FastAPI prediction endpoint was smoke-tested with a held-out
+        glioma image after integration.
+      </p>
+      <pre><code>status: 200
+predicted_label: glioma
+display_label: Glioma
+confidence: 99.58
+model_version: efficientnet-b0-transfer-calibrated-v1
+is_uncertain: false
+confidence_threshold: 70.0</code></pre>
+      <p>
+        The Astro application build was also verified with
+        <code>npm run build</code>.
       </p>
     </section>
 
     <section>
-      <h2>Future Improvements</h2>
+      <h2>Current Limitations</h2>
       <p>
-        While CerebraSense achieved strong classification performance, several
-        improvements can make the system more robust and clinically useful.
+        The improved model is the strongest CerebraSense model produced in the
+        notebook so far, but it should not be described as clinically perfect.
+        The test result reflects the available dataset and split, not broad
+        hospital-grade validation.
       </p>
-      <p>
-        One important improvement is data augmentation. The final CNN currently
-        uses standardized 32 x 32 grayscale images without a full augmentation
-        pipeline. Applying controlled rotation, zooming, shifting, horizontal
-        flipping, contrast adjustment, and noise injection could expose the
-        model to more realistic MRI variation and improve robustness on unseen
-        scans.
-      </p>
-      <p>
-        Another direction is testing higher image resolutions. The 32 x 32
-        format makes the model lightweight and fast, but aggressive downsampling
-        may remove fine tumor boundaries or subtle anatomical features.
-        Comparing 32 x 32, 64 x 64, and 128 x 128 inputs would help measure the
-        tradeoff between speed and diagnostic detail.
-      </p>
-      <p>
-        The model could also be extended with interpretability tools such as
-        Grad-CAM or saliency maps. This would help show which image regions
-        influence the CNN's prediction and make the system easier to evaluate
-        in a medical imaging context.
-      </p>
-      <p>
-        Transfer learning is also a promising future enhancement. Although the
-        current CNN was intentionally trained from scratch, future versions
-        could compare it against medical-imaging or general-vision backbones
-        such as ResNet. This may improve convergence and robustness, especially
-        if the system is trained on larger or more diverse MRI datasets.
-      </p>
-      <p>
-        Finally, the deployment pipeline should be consolidated. The notebook
-        currently saves model weights, scaler, and metadata as separate files. A
-        future application version should organize these artifacts into a clear
-        inference module, include model versioning, preserve the exact
-        preprocessing pipeline, and validate predictions on external MRI
-        datasets before any clinical-facing use.
-      </p>
+      <ul>
+        <li>External validation on independent MRI datasets is still required.</li>
+        <li>Patient-level splitting should be used when patient identifiers are available.</li>
+        <li>MRI sequence type and acquisition differences may affect performance.</li>
+        <li>The model does not localize tumors or estimate grade, size, or severity.</li>
+        <li>Radiology review remains necessary for any clinical interpretation.</li>
+      </ul>
     </section>
   </article>
 </Container>
@@ -635,6 +750,23 @@ import Sectionhead from "@/components/sectionhead.astro";
     padding: 0.1rem 0.35rem;
   }
 
+  .development-content pre {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.9rem;
+    background: rgb(15 23 42);
+    color: rgb(226 232 240);
+    margin-top: 1rem;
+    overflow-x: auto;
+    padding: 1rem;
+  }
+
+  .development-content pre code {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    padding: 0;
+  }
+
   .development-content .table-scroll {
     border: 1px solid rgb(226 232 240);
     border-radius: 0.9rem;
@@ -672,5 +804,59 @@ import Sectionhead from "@/components/sectionhead.astro";
   .development-content .note {
     color: rgb(51 65 85);
     font-weight: 600;
+  }
+
+  .callout {
+    border: 1px solid rgb(203 213 225);
+    border-radius: 0.9rem;
+    background: rgb(248 250 252);
+    color: rgb(30 41 59);
+    font-weight: 600;
+    padding: 1rem;
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .metric-card {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.9rem;
+    background: rgb(248 250 252);
+    padding: 1rem;
+  }
+
+  .metric-card span {
+    display: block;
+    color: rgb(71 85 105);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .metric-card strong {
+    display: block;
+    color: rgb(15 23 42);
+    font-size: 1.45rem;
+    margin-top: 0.35rem;
+  }
+
+  .artifact-list {
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 900px) {
+    .metric-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .metric-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

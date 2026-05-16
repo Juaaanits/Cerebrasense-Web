@@ -88,6 +88,7 @@ import Layout from "@/layouts/Layout.astro";
             <div class="result-summary">
               <p class="result-label">Predicted Class:</p>
               <h3 data-result-diagnosis>Awaiting Result</h3>
+              <p class="result-status" data-result-status hidden></p>
 
               <div class="probabilities">
                 <p class="result-label">Model Confidence Scores:</p>
@@ -121,6 +122,8 @@ import Layout from "@/layouts/Layout.astro";
     document.querySelector<HTMLElement>("[data-result-scan-placeholder]");
   const resultDiagnosis =
     document.querySelector<HTMLElement>("[data-result-diagnosis]");
+  const resultStatus =
+    document.querySelector<HTMLElement>("[data-result-status]");
   const probabilityList =
     document.querySelector<HTMLElement>("[data-probability-list]");
   const resultCloseButton =
@@ -134,8 +137,11 @@ import Layout from "@/layouts/Layout.astro";
   type AnalysisResponse = {
     analysis: {
       predicted_label: string;
+      display_label?: string;
       confidence: number;
       probabilities: Record<string, number>;
+      is_uncertain?: boolean;
+      confidence_threshold?: number;
     };
   };
 
@@ -288,9 +294,21 @@ import Layout from "@/layouts/Layout.astro";
     setPreviewFile(file);
 
     if (resultDiagnosis) {
-      resultDiagnosis.textContent = formatLabel(
-        normalizeLabel(analysis.predicted_label),
-      );
+      resultDiagnosis.textContent =
+        analysis.display_label ??
+        formatLabel(normalizeLabel(analysis.predicted_label));
+    }
+
+    if (resultStatus) {
+      if (analysis.is_uncertain) {
+        resultStatus.textContent = `Uncertain result. Confidence is below the ${Number(
+          analysis.confidence_threshold ?? 70,
+        ).toFixed(0)}% review threshold.`;
+        resultStatus.hidden = false;
+      } else {
+        resultStatus.textContent = "";
+        resultStatus.hidden = true;
+      }
     }
 
     renderProbabilities(analysis.probabilities, analysis.predicted_label);
@@ -851,13 +869,29 @@ import Layout from "@/layouts/Layout.astro";
   }
 
   .result-summary h3 {
-    margin: 0.85rem 0 2rem;
+    margin: 0.85rem 0 1rem;
     color: rgb(15 23 42);
     font-family: "Bricolage Grotesque Variable", sans-serif;
     font-size: clamp(2rem, 4.5vw, 3rem);
     font-weight: 700;
     letter-spacing: -0.05em;
     line-height: 1;
+  }
+
+  .result-status {
+    margin: 0 0 1.5rem;
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    background: #fffbeb;
+    color: #92400e;
+    padding: 0.85rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .result-status[hidden] {
+    display: none;
   }
 
   .probabilities {

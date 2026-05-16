@@ -1,61 +1,56 @@
-import pickle
 from pathlib import Path
+from typing import Any
 
 import torch
 import torch.nn as nn
+from torchvision import models
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = BASE_DIR / "models"
+BUNDLE_PATH = MODELS_DIR / "cerebrasense_improved_bundle.pt"
 
 
-class CNN(nn.Module):
-    def __init__(self, img_size: int):
-        super().__init__()
+def _torch_load(path: Path, device: torch.device) -> dict[str, Any]:
+    try:
+        return torch.load(path, map_location=device, weights_only=False)
+    except TypeError:
+        return torch.load(path, map_location=device)
 
-        self.conv = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
+
+def build_model(model_name: str, num_classes: int) -> nn.Module:
+    model_name = model_name.lower()
+
+    if model_name == "efficientnet_b0":
+        model = models.efficientnet_b0(weights=None)
+        in_features = model.classifier[1].in_features
+        model.classifier = nn.Sequential(
+            nn.Dropout(p=0.30),
+            nn.Linear(in_features, num_classes),
         )
+        return model
 
-        with torch.no_grad():
-            dummy = torch.zeros(1, 1, img_size, img_size)
-            n = self.conv(dummy).view(1, -1).shape[1]
+    if model_name == "resnet18":
+        model = models.resnet18(weights=None)
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+        return model
 
-        self.fc = nn.Sequential(
-            nn.Linear(n, 128),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(128, 4),
-        )
+    if model_name == "mobilenet_v3_small":
+        model = models.mobilenet_v3_small(weights=None)
+        model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
+        return model
 
-    def forward(self, x):
-        x = self.conv(x)
-        x = x.view(x.size(0), -1)
-        return self.fc(x)
+    raise ValueError(f"Unsupported model_name in bundle: {model_name}")
 
 
 def load_artifacts():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    bundle = _torch_load(BUNDLE_PATH, device)
 
-    with open(MODELS_DIR / "metadata.pkl1", "rb") as metadata_file:
-        metadata = pickle.load(metadata_file)
-
-    with open(MODELS_DIR / "scaler.pkl1", "rb") as scaler_file:
-        scaler = pickle.load(scaler_file)
-
-    model = CNN(metadata["img_size"])
-    model.load_state_dict(
-        torch.load(MODELS_DIR / "cnn_model1.pt", map_location=device)
-    )
+    class_names = bundle["class_names"]
+    model = build_model(bundle["model_name"], num_classes=len(class_names))
+    model.load_state_dict(bundle["model_state"])
     model.to(device)
     model.eval()
 
-    return model, scaler, metadata, device
+    return model, bundle, device

@@ -94,6 +94,13 @@ export const POST: APIRoute = async ({ request }) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json({ analysis: data });
+  return Response.json({
+    analysis: {
+      ...data,
+      display_label: prediction.display_label,
+      is_uncertain: prediction.is_uncertain,
+      confidence_threshold: prediction.confidence_threshold,
+    },
+  });
 };
 

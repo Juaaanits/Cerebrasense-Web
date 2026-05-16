@@ -20,6 +20,7 @@ pnpm-debug.log*
 
 # local model artifacts
 model-service/models/*.pt
+model-service/models/*.json
 model-service/models/*.pkl
 model-service/models/*.pkl1
 

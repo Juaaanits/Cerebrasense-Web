@@ -10,13 +10,19 @@ export interface TumorAnalysis {
   confidence: number;
   probabilities: TumorProbabilities;
   model_version: string | null;
+  display_label?: string;
+  is_uncertain?: boolean;
+  confidence_threshold?: number;
   status: "completed" | "failed" | string;
   error_message: string | null;
 }
 
 export interface ModelPrediction {
   predicted_label: string;
+  display_label?: string;
   confidence: number;
   probabilities: TumorProbabilities;
   model_version?: string;
+  is_uncertain?: boolean;
+  confidence_threshold?: number;
 }

@@ -1,17 +1,19 @@
-import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageOps
+from torchvision import transforms
 
 
-def preprocess_image(image: Image.Image, scaler, img_size: int) -> torch.Tensor:
-    image = image.convert("L")
-    image = image.resize((img_size, img_size))
-
-    pixels = np.array(image).astype(np.float32)
-    flattened = pixels.reshape(1, -1)
-    scaled = scaler.transform(flattened)
-
-    return torch.tensor(
-        scaled.reshape(1, 1, img_size, img_size),
-        dtype=torch.float32,
+def preprocess_image(image: Image.Image, bundle: dict) -> torch.Tensor:
+    transform = transforms.Compose(
+        [
+            transforms.Resize((bundle["image_size"], bundle["image_size"])),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=bundle["imagenet_mean"],
+                std=bundle["imagenet_std"],
+            ),
+        ]
     )
+
+    image = ImageOps.exif_transpose(image).convert("RGB")
+    return transform(image).unsqueeze(0).to(dtype=torch.float32)
