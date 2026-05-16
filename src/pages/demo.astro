@@ -71,9 +71,16 @@ import Layout from "@/layouts/Layout.astro";
 
           <div class="result-layout">
             <figure class="result-scan">
+              <img
+                class="result-scan-preview"
+                alt="Uploaded MRI preview"
+                data-result-scan-preview
+                hidden
+              />
               <div
                 class="result-scan-placeholder"
-                aria-label="MRI preview unavailable">
+                aria-label="MRI preview unavailable"
+                data-result-scan-placeholder>
               </div>
               <figcaption data-result-file-name>Uploaded MRI image</figcaption>
             </figure>
@@ -108,6 +115,10 @@ import Layout from "@/layouts/Layout.astro";
     document.querySelector<HTMLDialogElement>("[data-analysis-result]");
   const resultFileName =
     document.querySelector<HTMLElement>("[data-result-file-name]");
+  const resultScanPreview =
+    document.querySelector<HTMLImageElement>("[data-result-scan-preview]");
+  const resultScanPlaceholder =
+    document.querySelector<HTMLElement>("[data-result-scan-placeholder]");
   const resultDiagnosis =
     document.querySelector<HTMLElement>("[data-result-diagnosis]");
   const probabilityList =
@@ -117,6 +128,7 @@ import Layout from "@/layouts/Layout.astro";
 
   const allowedTypes = ["image/jpeg", "image/png"];
   let selectedFile: File | null = null;
+  let selectedFilePreviewUrl: string | null = null;
   let isAnalyzing = false;
 
   type AnalysisResponse = {
@@ -158,6 +170,36 @@ import Layout from "@/layouts/Layout.astro";
   const hideAnalysisResult = () => {
     resultPanel?.close();
     document.body.style.overflow = "";
+  };
+
+  const clearPreviewUrl = () => {
+    if (selectedFilePreviewUrl) {
+      URL.revokeObjectURL(selectedFilePreviewUrl);
+      selectedFilePreviewUrl = null;
+    }
+
+    if (resultScanPreview) {
+      resultScanPreview.src = "";
+      resultScanPreview.hidden = true;
+    }
+
+    if (resultScanPlaceholder) {
+      resultScanPlaceholder.hidden = false;
+    }
+  };
+
+  const setPreviewFile = (file: File) => {
+    clearPreviewUrl();
+    selectedFilePreviewUrl = URL.createObjectURL(file);
+
+    if (resultScanPreview) {
+      resultScanPreview.src = selectedFilePreviewUrl;
+      resultScanPreview.hidden = false;
+    }
+
+    if (resultScanPlaceholder) {
+      resultScanPlaceholder.hidden = true;
+    }
   };
 
   const renderProbabilities = (
@@ -210,6 +252,8 @@ import Layout from "@/layouts/Layout.astro";
       resultFileName.textContent = file.name;
     }
 
+    setPreviewFile(file);
+
     if (resultDiagnosis) {
       resultDiagnosis.textContent = formatLabel(analysis.predicted_label);
     }
@@ -240,6 +284,7 @@ import Layout from "@/layouts/Layout.astro";
       fileName.textContent = "";
     }
 
+    clearPreviewUrl();
     readyPanel?.setAttribute("hidden", "");
     dropZone?.classList.remove("has-file");
     hideAnalysisResult();
@@ -720,13 +765,34 @@ import Layout from "@/layouts/Layout.astro";
     text-align: center;
   }
 
+  .result-scan-preview,
   .result-scan-placeholder {
+    width: 100%;
     min-height: clamp(260px, 36vw, 420px);
     border: 1px solid #cbd5e1;
     border-radius: 16px;
+  }
+
+  .result-scan-preview {
+    display: block;
+    height: clamp(260px, 36vw, 420px);
+    object-fit: contain;
+    object-position: center;
+    background: #f8fafc;
+  }
+
+  .result-scan-preview[hidden] {
+    display: none;
+  }
+
+  .result-scan-placeholder {
     background:
       linear-gradient(135deg, rgba(15, 23, 42, 0.03), transparent 38%),
       #f8fafc;
+  }
+
+  .result-scan-placeholder[hidden] {
+    display: none;
   }
 
   .result-scan figcaption {
