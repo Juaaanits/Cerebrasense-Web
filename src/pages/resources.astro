@@ -7,45 +7,77 @@ const resources = [
     title: "Development Overview",
     label: "Available",
     description:
-      "Read the technical summary of the dataset, preprocessing pipeline, CNN architecture, training setup, and evaluation results.",
+      "Read the technical summary of the dataset, preprocessing pipeline, model architecture, training setup, and evaluation results.",
     href: "/development",
     action: "Open overview",
   },
   {
     title: "GitHub Repository",
-    label: "Pending",
+    label: "Available",
     description:
-      "Add the source-code repository link here once the public repository is ready.",
-    action: "Link pending",
+      "Source code for the Astro web app, Supabase integration, API routes, and local FastAPI model service.",
+    href: "https://github.com/Juaaanits/Cerebrasense-Web",
+    action: "Open repository",
   },
   {
-    title: "Model Notebook",
-    label: "Pending",
+    title: "Runtime Services",
+    label: "Local",
     description:
-      "Add the notebook link here if the model experiments are stored separately from the web application.",
-    action: "Link pending",
+      "The web app runs on Astro, while PyTorch inference runs through FastAPI at localhost:8000 during development.",
+    action: "Configured locally",
   },
   {
-    title: "Dataset Source",
-    label: "Pending",
+    title: "Data Storage",
+    label: "Supabase",
     description:
-      "Brain Tumor MRI Dataset by Masoud Nickparvar from Kaggle, used for multi-class MRI classification.",
-    action: "Link pending",
+      "Uploaded MRI files are stored in the private brain-scans bucket, and prediction records are saved in tumor_analyses.",
+    action: "Configured in SQL",
   },
 ];
 
 const techCategories = [
   {
-    title: "Frontend",
+    title: "Web Application",
     icon: "bx:bxs-cog",
     items: [
-      { name: "Astro", icon: "simple-icons:astro" },
+      { name: "Astro 5", icon: "simple-icons:astro" },
+      { name: "@astrojs/node", icon: "simple-icons:nodedotjs" },
       { name: "TypeScript", icon: "simple-icons:typescript" },
       { name: "Tailwind CSS", icon: "simple-icons:tailwindcss" },
     ],
   },
   {
-    title: "Icons & SEO",
+    title: "Supabase Backend",
+    icon: "simple-icons:supabase",
+    items: [
+      { name: "supabase-js", icon: "simple-icons:supabase" },
+      { name: "Postgres", icon: "simple-icons:postgresql" },
+      { name: "Storage Bucket", icon: "bx:bxs-folder" },
+      { name: "RLS Policies", icon: "bx:bxs-lock" },
+    ],
+  },
+  {
+    title: "Model Service",
+    icon: "bx:bxs-brain",
+    items: [
+      { name: "FastAPI", icon: "simple-icons:fastapi" },
+      { name: "Python", icon: "simple-icons:python" },
+      { name: "PyTorch", icon: "simple-icons:pytorch" },
+      { name: "torchvision", icon: "simple-icons:pytorch" },
+    ],
+  },
+  {
+    title: "ML Utilities",
+    icon: "bx:bxs-chip",
+    items: [
+      { name: "NumPy", icon: "simple-icons:numpy" },
+      { name: "scikit-learn", icon: "simple-icons:scikitlearn" },
+      { name: "Pillow", icon: "bx:bxs-image" },
+      { name: "python-multipart", icon: "bx:bxs-file" },
+    ],
+  },
+  {
+    title: "UI & SEO",
     icon: "bx:bxs-search",
     items: [
       { name: "astro-icon", icon: "bx:bxs-cog" },
@@ -54,31 +86,7 @@ const techCategories = [
       { name: "@astrojs/sitemap", icon: "bx:bx-sitemap" },
     ],
   },
-  {
-    title: "Model Development",
-    icon: "bx:bxs-brain",
-    items: [
-      { name: "Python", icon: "simple-icons:python" },
-      { name: "NumPy", icon: "simple-icons:numpy" },
-      { name: "PyTorch", icon: "simple-icons:pytorch" },
-      { name: "scikit-learn", icon: "simple-icons:scikitlearn" },
-    ],
-  },
-  {
-    title: "Mobile & Deployment",
-    icon: "bx:bxs-mobile",
-    items: [
-      { name: "React Native", icon: "simple-icons:react" },
-      { name: "Expo", icon: "simple-icons:expo" },
-      { name: "TypeScript", icon: "simple-icons:typescript" },
-      { name: "FastAPI", icon: "simple-icons:fastapi" },
-      { name: "PyTorch Backend", icon: "simple-icons:pytorch" },
-      { name: "Supabase", icon: "simple-icons:supabase" },
-      { name: "ExecuTorch", icon: "bx:bxs-chip" },
-    ],
-  },
 ];
-
 ---
 
 <Layout title="Resources">
@@ -118,11 +126,12 @@ const techCategories = [
     <section class="setup-section">
       <div class="section-copy">
         <p class="eyebrow">Local Setup</p>
-        <h2>Run The Web App</h2>
+        <h2>Run The Full Stack</h2>
         <p>
-          Use these commands when reviewing or modifying the Astro frontend
-          locally. The development server runs the site at
-          <code>localhost:4321</code>.
+          Run the FastAPI model service and Astro app in separate terminals.
+          The web app reads Supabase credentials from <code>.env</code> or
+          <code>.env.local</code>, then sends scan uploads to
+          <code>MODEL_API_URL</code>.
         </p>
       </div>
 
@@ -132,16 +141,53 @@ const techCategories = [
           <span></span>
           <span></span>
         </div>
-        <pre><code>npm install
+        <pre><code># Terminal 1: model service
+cd model-service
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2: Astro app
+cd ..
+npm install
 npm run dev
 
-# Open the local site
-http://localhost:4321
+# Local URLs
+http://localhost:4321/demo
+http://localhost:4321/repository
 
-# Production build
+# Verification
 npm run build
-npm run preview</code></pre>
+curl http://127.0.0.1:8000/health</code></pre>
       </div>
+    </section>
+
+    <section class="environment-section">
+      <article class="reference-card">
+        <p class="eyebrow">Configuration</p>
+        <h2>Environment Variables</h2>
+        <p>
+          Keep secrets local. These values are required for upload, analysis,
+          private image storage, and repository records.
+        </p>
+        <pre><code>PUBLIC_SUPABASE_URL=your_supabase_project_url
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+SUPABASE_SECRET_KEY=your_service_role_or_secret_key
+MODEL_API_URL=http://127.0.0.1:8000
+MODEL_API_TOKEN=dev-secret-token</code></pre>
+      </article>
+
+      <article class="reference-card">
+        <p class="eyebrow">Data Flow</p>
+        <h2>Analysis Pipeline</h2>
+        <ol class="flow-list">
+          <li>Upload a JPEG or PNG MRI from <code>/demo</code>.</li>
+          <li><code>/api/analyze</code> stores the image in Supabase Storage.</li>
+          <li>The API route forwards the image to FastAPI <code>/predict</code>.</li>
+          <li>FastAPI loads the PyTorch model and returns probabilities.</li>
+          <li>The result is inserted into <code>tumor_analyses</code>.</li>
+          <li><code>/repository</code> renders saved records from Supabase.</li>
+        </ol>
+      </article>
     </section>
 
     <section class="reference-grid">
@@ -161,7 +207,7 @@ npm run preview</code></pre>
               <summary>
                 <Icon class="tree-icon" name="bx:bxs-folder-open" />
                 <span>src</span>
-                <span class="tree-badge">4 items</span>
+                <span class="tree-badge">6 items</span>
               </summary>
               <div class="tree-children">
                 <div class="tree-row">
@@ -171,6 +217,14 @@ npm run preview</code></pre>
                 <div class="tree-row">
                   <Icon class="tree-icon" name="bx:bxs-folder" />
                   <span>layouts</span>
+                </div>
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>lib/supabase</span>
+                </div>
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>pages/api</span>
                 </div>
                 <div class="tree-row">
                   <Icon class="tree-icon" name="bx:bxs-folder" />
@@ -186,12 +240,20 @@ npm run preview</code></pre>
             <details>
               <summary>
                 <Icon class="tree-icon" name="bx:bxs-folder" />
-                <span>public</span>
+                <span>model-service</span>
               </summary>
               <div class="tree-children">
-                <div class="tree-row muted-row">
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>app</span>
+                </div>
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-folder" />
+                  <span>models</span>
+                </div>
+                <div class="tree-row">
                   <Icon class="tree-icon" name="bx:bxs-file" />
-                  <span>static assets</span>
+                  <span>requirements.txt</span>
                 </div>
               </div>
             </details>
@@ -199,12 +261,25 @@ npm run preview</code></pre>
             <details>
               <summary>
                 <Icon class="tree-icon" name="bx:bxs-folder" />
-                <span>dist</span>
+                <span>supabase</span>
+              </summary>
+              <div class="tree-children">
+                <div class="tree-row">
+                  <Icon class="tree-icon" name="bx:bxs-file" />
+                  <span>schema.sql</span>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <Icon class="tree-icon" name="bx:bxs-folder" />
+                <span>public</span>
               </summary>
               <div class="tree-children">
                 <div class="tree-row muted-row">
                   <Icon class="tree-icon" name="bx:bxs-file" />
-                  <span>production build output</span>
+                  <span>static assets</span>
                 </div>
               </div>
             </details>
@@ -535,12 +610,49 @@ npm run preview</code></pre>
     margin-top: 72px;
   }
 
+  .environment-section {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    margin-top: 72px;
+  }
+
   .reference-card {
     padding: 30px;
   }
 
   .reference-card h2 {
     font-size: clamp(1.7rem, 3vw, 2.3rem);
+  }
+
+  .reference-card > p:not(.eyebrow) {
+    color: var(--muted);
+    line-height: 1.75;
+    margin: 16px 0 0;
+  }
+
+  .reference-card pre {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #0b0f16;
+    color: #e5e7eb;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    margin-top: 20px;
+    padding: 20px;
+  }
+
+  .flow-list {
+    display: grid;
+    gap: 12px;
+    margin: 20px 0 0;
+    padding-left: 1.25rem;
+  }
+
+  .flow-list li {
+    color: var(--muted);
+    line-height: 1.65;
+    padding-left: 0.25rem;
   }
 
   .file-browser {
@@ -867,6 +979,7 @@ npm run preview</code></pre>
 
     .resource-grid,
     .setup-section,
+    .environment-section,
     .reference-grid,
     .bottom-card-grid,
     .developer-card {
