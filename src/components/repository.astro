@@ -110,16 +110,53 @@ const tumorDetails = {
   no_tumor: noTumorDetails,
 };
 
+const fallbackDetails = {
+  insightTitle: "Model Output",
+  insightSubtitle: "Class-specific pattern detected by the model",
+  description: [
+    "The model produced a class label that is not part of the current insight library. Review the confidence scores, image quality, and stored label value before using this result for research interpretation.",
+    "This result should still be treated as an AI classification output only. It cannot confirm or rule out disease and must be interpreted with clinical context and professional radiology review.",
+  ],
+  signsTitle: "Model Interpretation Notes",
+  signs: [
+    "Stored label does not match a known insight key",
+    "Image preprocessing may affect the result",
+    "Probability distribution should be reviewed",
+    "Model output is not a clinical diagnosis",
+    "Radiology interpretation remains required",
+    "Clinical history must be considered",
+  ],
+  recommendation:
+    "Ask a qualified healthcare professional to review the MRI and the original radiology report. Use this application result only as research or educational support.",
+  notice:
+    "Important: CerebraSense is a research and educational prototype, not a diagnostic medical device.",
+};
+
 const labelMap = {
   glioma: "Glioma",
   meningioma: "Meningioma",
   notumor: "No Tumor",
-  no_tumor: "No Tumor",
   pituitary: "Pituitary",
 };
 
+const labelAliases = {
+  glioma: "glioma",
+  meningioma: "meningioma",
+  "no tumor": "notumor",
+  no_tumor: "notumor",
+  notumor: "notumor",
+  pituitary: "pituitary",
+};
+
+const classOrder = ["glioma", "meningioma", "notumor", "pituitary"];
+
+const normalizeLabel = (label: string) => {
+  const key = String(label ?? "").trim().toLowerCase().replace(/[-\s]+/g, "_");
+  return labelAliases[key as keyof typeof labelAliases] ?? key;
+};
+
 const formatLabel = (label: string) =>
-  labelMap[label as keyof typeof labelMap] ?? label;
+  labelMap[normalizeLabel(label) as keyof typeof labelMap] ?? label;
 
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat("en", {
@@ -144,22 +181,36 @@ const analyses = await Promise.all(
       .from("brain-scans")
       .createSignedUrl(row.image_path, 60 * 60);
     const predictedLabel = row.predicted_label;
-    const detailKey = predictedLabel as keyof typeof tumorDetails;
-    const details = tumorDetails[detailKey] ?? gliomaDetails;
+    const normalizedLabel = normalizeLabel(predictedLabel);
+    const detailKey = normalizedLabel as keyof typeof tumorDetails;
+    const details = tumorDetails[detailKey] ?? fallbackDetails;
+    const normalizedProbabilities = Object.entries(row.probabilities ?? {}).reduce(
+      (scores, [label, value]) => {
+        scores[normalizeLabel(label)] = Number(value);
+        return scores;
+      },
+      {} as Record<string, number>,
+    );
+    const scoreKeys = [
+      ...classOrder.filter((label) => label in normalizedProbabilities),
+      ...Object.keys(normalizedProbabilities).filter(
+        (label) => !classOrder.includes(label),
+      ),
+    ];
 
     return {
       id: row.id,
       image: signedImage?.signedUrl ?? "",
-      prediction: formatLabel(predictedLabel),
+      prediction: formatLabel(normalizedLabel),
       confidence: `${Number(row.confidence).toFixed(1)}%`,
       filename: row.original_filename,
       date: formatDate(row.created_at),
-      category: formatLabel(predictedLabel),
-      scores: Object.entries(row.probabilities ?? {}).map(([label, value]) => ({
+      category: formatLabel(normalizedLabel),
+      scores: scoreKeys.map((label) => ({
         label: formatLabel(label),
-        value: Number(value).toFixed(1),
-        width: Math.max(0, Math.min(100, Number(value))),
-        highlight: label === predictedLabel,
+        value: normalizedProbabilities[label].toFixed(1),
+        width: Math.max(0, Math.min(100, normalizedProbabilities[label])),
+        highlight: label === normalizedLabel,
       })),
       ...details,
     };

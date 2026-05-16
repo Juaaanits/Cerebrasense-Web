@@ -86,11 +86,11 @@ import Layout from "@/layouts/Layout.astro";
             </figure>
 
             <div class="result-summary">
-              <p class="result-label">Predicted Diagnosis:</p>
+              <p class="result-label">Predicted Class:</p>
               <h3 data-result-diagnosis>Awaiting Result</h3>
 
               <div class="probabilities">
-                <p class="result-label">Class Probabilities:</p>
+                <p class="result-label">Model Confidence Scores:</p>
                 <div class="probability-list" data-probability-list></div>
               </div>
             </div>
@@ -143,11 +143,27 @@ import Layout from "@/layouts/Layout.astro";
     glioma: "Glioma",
     meningioma: "Meningioma",
     notumor: "No Tumor",
-    no_tumor: "No Tumor",
     pituitary: "Pituitary",
   };
 
-  const formatLabel = (label: string) => labelMap[label] ?? label;
+  const labelAliases: Record<string, string> = {
+    glioma: "glioma",
+    meningioma: "meningioma",
+    "no tumor": "notumor",
+    no_tumor: "notumor",
+    notumor: "notumor",
+    pituitary: "pituitary",
+  };
+
+  const classOrder = ["glioma", "meningioma", "notumor", "pituitary"];
+
+  const normalizeLabel = (label: string) => {
+    const key = String(label ?? "").trim().toLowerCase().replace(/[-\s]+/g, "_");
+    return labelAliases[key] ?? key;
+  };
+
+  const formatLabel = (label: string) =>
+    labelMap[normalizeLabel(label)] ?? label;
 
   const setError = (message: string) => {
     if (!errorMessage) {
@@ -212,7 +228,23 @@ import Layout from "@/layouts/Layout.astro";
 
     probabilityList.textContent = "";
 
-    Object.entries(probabilities).forEach(([label, value]) => {
+    const normalizedPredictedLabel = normalizeLabel(predictedLabel);
+    const normalizedProbabilities = Object.entries(probabilities).reduce(
+      (scores, [label, value]) => {
+        scores[normalizeLabel(label)] = Number(value);
+        return scores;
+      },
+      {} as Record<string, number>,
+    );
+    const scoreKeys = [
+      ...classOrder.filter((label) => label in normalizedProbabilities),
+      ...Object.keys(normalizedProbabilities).filter(
+        (label) => !classOrder.includes(label),
+      ),
+    ];
+
+    scoreKeys.forEach((label) => {
+      const value = normalizedProbabilities[label];
       const item = document.createElement("div");
       item.className = "probability-item";
 
@@ -230,8 +262,9 @@ import Layout from "@/layouts/Layout.astro";
 
       const fill = document.createElement("span");
       fill.className = "probability-fill";
-      if (label === predictedLabel) {
+      if (label === normalizedPredictedLabel) {
         fill.classList.add("probability-fill-highlight");
+        item.classList.add("probability-item-active");
       }
       fill.style.width = `${Math.max(0, Math.min(100, Number(value)))}%`;
 
@@ -255,7 +288,9 @@ import Layout from "@/layouts/Layout.astro";
     setPreviewFile(file);
 
     if (resultDiagnosis) {
-      resultDiagnosis.textContent = formatLabel(analysis.predicted_label);
+      resultDiagnosis.textContent = formatLabel(
+        normalizeLabel(analysis.predicted_label),
+      );
     }
 
     renderProbabilities(analysis.probabilities, analysis.predicted_label);
@@ -805,6 +840,7 @@ import Layout from "@/layouts/Layout.astro";
 
   .result-summary {
     padding-top: 0.35rem;
+    min-width: 0;
   }
 
   .result-label {
@@ -832,12 +868,22 @@ import Layout from "@/layouts/Layout.astro";
   .probability-list,
   :global(.probability-list) {
     display: grid;
-    gap: 1.25rem;
+    gap: 0.9rem;
   }
 
   :global(.probability-item) {
     display: grid;
     gap: 0.55rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    padding: 0.85rem 0.95rem;
+  }
+
+  :global(.probability-item-active) {
+    border-color: rgba(15, 23, 42, 0.35);
+    background: white;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
   }
 
   .probability-meta,
@@ -850,6 +896,16 @@ import Layout from "@/layouts/Layout.astro";
     color: rgb(30 41 59);
     font-size: 0.98rem;
     font-weight: 800;
+    line-height: 1.2;
+  }
+
+  :global(.probability-meta span:first-child) {
+    overflow-wrap: anywhere;
+  }
+
+  :global(.probability-meta span:last-child) {
+    flex: 0 0 auto;
+    font-variant-numeric: tabular-nums;
   }
 
   .probability-track,
