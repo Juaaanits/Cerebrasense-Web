@@ -15,5 +15,18 @@ export const GET: APIRoute = async () => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json({ analyses: data });
+  const analyses = await Promise.all(
+    (data ?? []).map(async (analysis) => {
+      const { data: signedImage } = await supabase.storage
+        .from("brain-scans")
+        .createSignedUrl(analysis.image_path, 60 * 60);
+
+      return {
+        ...analysis,
+        image_url: signedImage?.signedUrl ?? null,
+      };
+    }),
+  );
+
+  return Response.json({ analyses });
 };

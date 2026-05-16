@@ -1,6 +1,8 @@
 ---
 import Container from "@/components/container.astro";
 import Sectionhead from "@/components/sectionhead.astro";
+import { createSupabaseAdmin } from "@/lib/supabase/server";
+import type { TumorAnalysis } from "@/pages/types/analysis";
 
 const filters = ["All", "Glioma", "No Tumor", "Pituitary", "Meningioma"];
 
@@ -54,80 +56,84 @@ const gliomaDetails = {
     "Important: This is not a clinical diagnosis. CerebraSense is a research and educational prototype.",
 };
 
-const analyses = [
-  {
-    id: "no-tumor-0404",
-    image: "",
-    prediction: "No Tumor",
-    confidence: "99.5%",
-    filename: "Te-no_0404.jpg",
-    date: "August 1, 2025",
-    category: "No Tumor",
-    scores: [
-      { label: "Glioma", value: 0 },
-      { label: "Meningioma", value: 0 },
-      { label: "No Tumor", value: 99, highlight: true },
-      { label: "Pituitary", value: 0 },
-    ],
-    ...noTumorDetails,
-  },
-  {
-    id: "glioma-0000",
-    image: "",
-    prediction: "Glioma",
-    confidence: "97.8%",
-    filename: "Te-glTr_0000.jpg",
-    date: "August 1, 2025",
-    category: "Glioma",
-    scores: [
-      { label: "Glioma", value: 98, highlight: true },
-      { label: "Meningioma", value: 1 },
-      { label: "No Tumor", value: 0 },
-      { label: "Pituitary", value: 1 },
-    ],
+const tumorDetails = {
+  glioma: gliomaDetails,
+  meningioma: {
     ...gliomaDetails,
+    insightTitle: "Meningioma",
+    insightSubtitle: "Meningioma-like pattern detected",
   },
-  {
-    id: "glioma-0024",
-    image: "",
-    prediction: "Glioma",
-    confidence: "99.5%",
-    filename: "1000000024.jpg",
-    date: "August 1, 2025",
-    category: "Glioma",
-    scores: [
-      { label: "Glioma", value: 99, highlight: true },
-      { label: "Meningioma", value: 1 },
-      { label: "No Tumor", value: 0 },
-      { label: "Pituitary", value: 0 },
-    ],
+  pituitary: {
     ...gliomaDetails,
+    insightTitle: "Pituitary",
+    insightSubtitle: "Pituitary tumor-like pattern detected",
   },
-  {
-    id: "glioma-0032",
-    image: "",
-    prediction: "Glioma",
-    confidence: "99.1%",
-    filename: "Te-gl_0032.jpg",
-    date: "August 1, 2025",
-    category: "Glioma",
-    scores: [
-      { label: "Glioma", value: 99, highlight: true },
-      { label: "Meningioma", value: 0 },
-      { label: "No Tumor", value: 0 },
-      { label: "Pituitary", value: 1 },
-    ],
-    ...gliomaDetails,
-  },
-];
+  notumor: noTumorDetails,
+  no_tumor: noTumorDetails,
+};
+
+const labelMap = {
+  glioma: "Glioma",
+  meningioma: "Meningioma",
+  notumor: "No Tumor",
+  no_tumor: "No Tumor",
+  pituitary: "Pituitary",
+};
+
+const formatLabel = (label: string) =>
+  labelMap[label as keyof typeof labelMap] ?? label;
+
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+
+const supabase = createSupabaseAdmin();
+const { data: analysisRows, error: analysesError } = await supabase
+  .from("tumor_analyses")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+if (analysesError) {
+  console.error("Repository load failed:", analysesError.message);
+}
+
+const analyses = await Promise.all(
+  ((analysisRows ?? []) as TumorAnalysis[]).map(async (row) => {
+    const { data: signedImage } = await supabase.storage
+      .from("brain-scans")
+      .createSignedUrl(row.image_path, 60 * 60);
+    const predictedLabel = row.predicted_label;
+    const detailKey = predictedLabel as keyof typeof tumorDetails;
+    const details = tumorDetails[detailKey] ?? gliomaDetails;
+
+    return {
+      id: row.id,
+      image: signedImage?.signedUrl ?? "",
+      prediction: formatLabel(predictedLabel),
+      confidence: `${Number(row.confidence).toFixed(1)}%`,
+      filename: row.original_filename,
+      date: formatDate(row.created_at),
+      category: formatLabel(predictedLabel),
+      scores: Object.entries(row.probabilities ?? {}).map(([label, value]) => ({
+        label: formatLabel(label),
+        value: Number(value).toFixed(1),
+        width: Math.max(0, Math.min(100, Number(value))),
+        highlight: label === predictedLabel,
+      })),
+      ...details,
+    };
+  }),
+);
 ---
 
 <Container>
   <Sectionhead>
     <Fragment slot="title">Repository of CerebraSense</Fragment>
     <Fragment slot="desc">
-      A collection of sample MRI analysis records for the future scan history
-      workflow.
+      A collection of saved MRI analysis records from CerebraSense.
     </Fragment>
   </Sectionhead>
 
@@ -147,7 +153,7 @@ const analyses = [
       <p class="repository-status" data-loading-state>Loading...</p>
       <p class="repository-status" data-empty-state hidden>No records found.</p>
 
-      <div class="analysis-grid" data-analysis-grid hidden>
+      <div class="analysis-grid" data-analysis-grid>
         {analyses.map((item) => (
           <article class="analysis-card" data-category={item.category}>
             {item.image ? (
@@ -223,7 +229,7 @@ const analyses = [
                         "score-fill",
                         score.highlight && "score-fill-highlight",
                       ]}
-                      style={`width: ${score.value}%`}>
+                      style={`width: ${score.width}%`}>
                     </span>
                   </div>
                 </div>
