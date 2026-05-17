@@ -45,6 +45,8 @@
 
 CerebraSense is a deep learning model-powered brain tumor MRI classification web application. It allows users to upload MRI images, sends them to a calibrated PyTorch model service for inference, stores the scan and prediction result in Supabase, and displays saved analysis history in a repository page.
 
+  <img src="public/homepage.png" alt="CerebraSense Logo" width="1000">
+
 The production architecture separates the web interface, model runtime, and storage layer:
 
 - **Vercel** hosts the Astro web application and server API routes.
@@ -73,31 +75,31 @@ In short: users interact with the Vercel-hosted web app, the app calls the Railw
 
 ### Web Application
 
-| Layer          | Technology           | Version | Purpose                                |
-| :------------- | :------------------- | :------ | :------------------------------------- |
-| Framework      | Astro                | 5.x     | Web app, pages, server-rendered routes |
+| Layer          | Technology           | Version | Purpose                                 |
+| :------------- | :------------------- | :------ | :-------------------------------------- |
+| Framework      | Astro                | 5.x     | Web app, pages, server-rendered routes  |
 | Server Adapter | `@astrojs/vercel`    | 9.x     | Vercel serverless output for API routes |
-| Language       | TypeScript           | 5.x     | Frontend and API route logic           |
-| Styling        | Tailwind CSS / CSS   | 4.x     | UI styling and responsive layouts      |
-| Icons          | astro-icon / Iconify | Latest  | Interface icons                        |
+| Language       | TypeScript           | 5.x     | Frontend and API route logic            |
+| Styling        | Tailwind CSS / CSS   | 4.x     | UI styling and responsive layouts       |
+| Icons          | astro-icon / Iconify | Latest  | Interface icons                         |
 
 ### Deployment
 
-| Layer | Platform | Purpose |
-| :---- | :------- | :------ |
-| Web App | Vercel | Hosts Astro pages, static assets, and `/api/*` server routes |
-| Model API | Railway | Hosts FastAPI, PyTorch, and the EfficientNet-B0 model runtime |
-| Database | Supabase | Stores `tumor_analyses` records |
-| File Storage | Supabase Storage / S3-compatible bucket | Stores MRI uploads and hosts the deployable model bundle |
+| Layer        | Platform                                | Purpose                                                       |
+| :----------- | :-------------------------------------- | :------------------------------------------------------------ |
+| Web App      | Vercel                                  | Hosts Astro pages, static assets, and `/api/*` server routes  |
+| Model API    | Railway                                 | Hosts FastAPI, PyTorch, and the EfficientNet-B0 model runtime |
+| Database     | Supabase                                | Stores `tumor_analyses` records                               |
+| File Storage | Supabase Storage / S3-compatible bucket | Stores MRI uploads and hosts the deployable model bundle      |
 
 ### Backend and Storage
 
-| Layer          | Technology              | Purpose                                               |
-| :------------- | :---------------------- | :---------------------------------------------------- |
-| Database       | Supabase Postgres       | Stores analysis metadata and prediction results       |
-| Object Storage | Supabase Storage / S3-compatible buckets | Stores uploaded MRI scans and model artifacts |
-| Client SDK     | `@supabase/supabase-js` | Server-side storage and database operations           |
-| Security       | RLS Policies            | Controls access to analysis records                   |
+| Layer          | Technology                               | Purpose                                         |
+| :------------- | :--------------------------------------- | :---------------------------------------------- |
+| Database       | Supabase Postgres                        | Stores analysis metadata and prediction results |
+| Object Storage | Supabase Storage / S3-compatible buckets | Stores uploaded MRI scans and model artifacts   |
+| Client SDK     | `@supabase/supabase-js`                  | Server-side storage and database operations     |
+| Security       | RLS Policies                             | Controls access to analysis records             |
 
 ### Model Service
 
@@ -314,24 +316,24 @@ This confirms the FastAPI service, deployed model version, active architecture, 
     <tr>
       <td align="center" width="50%">
         <strong>1. Upload Interface</strong><br>
-        <img src="public/opengraph.jpg" alt="CerebraSense Upload Interface" width="100%"><br>
+        <img src="public/upload.png" alt="CerebraSense Upload Interface" width="100%"><br>
         <sub>MRI upload page with drag-and-drop support and analysis action.</sub>
       </td>
       <td align="center" width="50%">
         <strong>2. Analysis Result</strong><br>
-        <img src="public/opengraph.jpg" alt="CerebraSense Analysis Result" width="100%"><br>
+        <img src="public/analysis.png" alt="CerebraSense Analysis Result" width="100%"><br>
         <sub>Prediction modal with uploaded image preview, calibrated class probabilities, and uncertainty notice when needed.</sub>
       </td>
     </tr>
     <tr>
       <td align="center" width="50%">
         <strong>3. Repository</strong><br>
-        <img src="public/opengraph.jpg" alt="CerebraSense Repository" width="100%"><br>
+        <img src="public/repository.png" alt="CerebraSense Repository" width="100%"><br>
         <sub>Saved Supabase analysis records with class filtering.</sub>
       </td>
       <td align="center" width="50%">
         <strong>4. Development Docs</strong><br>
-        <img src="public/opengraph.jpg" alt="CerebraSense Development Documentation" width="100%"><br>
+        <img src="public/development-docs.png" alt="CerebraSense Development Documentation" width="100%"><br>
         <sub>Improved model pipeline, evaluation metrics, and deployment notes.</sub>
       </td>
     </tr>
@@ -456,10 +458,10 @@ Never commit real environment values.
 
 Production environment placement:
 
-| Platform | Variables |
-| :------- | :-------- |
-| Vercel | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `MODEL_API_URL`, `MODEL_API_TOKEN` |
-| Railway | `MODEL_BUNDLE_URL`, `MODEL_API_TOKEN` if token enforcement is enabled |
+| Platform | Variables                                                                                                           |
+| :------- | :------------------------------------------------------------------------------------------------------------------ |
+| Vercel   | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `MODEL_API_URL`, `MODEL_API_TOKEN` |
+| Railway  | `MODEL_BUNDLE_URL`, `MODEL_API_TOKEN` if token enforcement is enabled                                               |
 
 ---
 
