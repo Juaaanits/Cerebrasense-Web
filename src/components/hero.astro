@@ -1,13 +1,9 @@
 ---
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import Link from "@/components/ui/link.astro";
 import { Icon } from "astro-icon/components";
 
 const splashImage = "/mobile-splash.png";
 const libraryImage = "/mobile-library.png";
-const splashImageExists = existsSync(fileURLToPath(new URL("../../public/mobile-splash.png", import.meta.url)));
-const libraryImageExists = existsSync(fileURLToPath(new URL("../../public/mobile-library.png", import.meta.url)));
 ---
 
 <main
@@ -16,52 +12,18 @@ const libraryImageExists = existsSync(fileURLToPath(new URL("../../public/mobile
     <div class="relative mx-auto flex items-end justify-center gap-4 xl:gap-6">
       <div class="relative h-[430px] w-[206px] rounded-[2.25rem] border-[6px] border-white bg-neutral-950 p-2.5 shadow-2xl xl:h-[500px] xl:w-[240px] xl:rounded-[2.7rem] xl:border-[7px] xl:p-3">
         <div class="absolute left-1/2 top-2.5 h-5 w-24 -translate-x-1/2 rounded-full bg-neutral-900 xl:top-3 xl:h-6 xl:w-28"></div>
-        {
-          splashImageExists ? (
-            <img
-              src={splashImage}
-              alt="Mobile app splash screen"
-              class="h-full w-full rounded-[1.75rem] object-cover xl:rounded-[2.2rem]" />
-          ) : (
-            <div class="flex h-full items-center justify-center rounded-[1.75rem] border-2 border-dashed border-white/15 bg-[linear-gradient(180deg,_#0f172a_0%,_#312e81_100%)] p-6 text-center xl:rounded-[2.2rem] xl:p-8">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
-                  Splash Screen
-                </p>
-                <p class="mt-4 text-lg font-medium text-white">Empty image container</p>
-                <p class="mt-2 text-sm leading-6 text-white/60">
-                  Add <span class="font-semibold text-white">public/mobile-splash.png</span>
-                  and it will appear here automatically.
-                </p>
-              </div>
-            </div>
-          )
-        }
+        <img
+          src={splashImage}
+          alt="Mobile app splash screen"
+          class="h-full w-full rounded-[1.75rem] object-cover xl:rounded-[2.2rem]" />
       </div>
 
       <div class="relative h-[430px] w-[206px] rounded-[2.25rem] border-[6px] border-white bg-neutral-950 p-2.5 shadow-2xl xl:h-[500px] xl:w-[240px] xl:rounded-[2.7rem] xl:border-[7px] xl:p-3">
         <div class="absolute left-1/2 top-2.5 h-5 w-24 -translate-x-1/2 rounded-full bg-neutral-900 xl:top-3 xl:h-6 xl:w-28"></div>
-        {
-          libraryImageExists ? (
-            <img
-              src={libraryImage}
-              alt="Mobile app repository screen"
-              class="h-full w-full rounded-[1.75rem] object-cover xl:rounded-[2.2rem]" />
-          ) : (
-            <div class="flex h-full items-center justify-center rounded-[1.75rem] border-2 border-dashed border-white/15 bg-black p-6 text-center xl:rounded-[2.2rem] xl:p-8">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
-                  Repository Screen
-                </p>
-                <p class="mt-4 text-lg font-medium text-white">Empty image container</p>
-                <p class="mt-2 text-sm leading-6 text-white/60">
-                  Add <span class="font-semibold text-white">public/mobile-library.png</span>
-                  and it will appear here automatically.
-                </p>
-              </div>
-            </div>
-          )
-        }
+        <img
+          src={libraryImage}
+          alt="Mobile app repository screen"
+          class="h-full w-full rounded-[1.75rem] object-cover xl:rounded-[2.2rem]" />
       </div>
     </div>
   </div>
