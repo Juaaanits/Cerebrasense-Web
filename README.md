@@ -10,7 +10,9 @@
 
 ![Astro](https://img.shields.io/badge/Astro-5-FF5D01?style=for-the-badge&logo=astro&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-Postgres_Storage-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-Astro_Web-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Railway](https://img.shields.io/badge/Railway-Model_Service-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres_S3_Storage-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Model_Service-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-EfficientNet_B0-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
 ![License](https://img.shields.io/badge/License-GPL--2.0-red?style=for-the-badge)
@@ -41,13 +43,15 @@
 
 ## Overview
 
-CerebraSense is an deep learning model-powered brain tumor MRI classification web application. It allows users to upload MRI images, sends them to a calibrated PyTorch model service for inference, stores the scan and prediction result in Supabase, and displays saved analysis history in a repository page.
+CerebraSense is a deep learning model-powered brain tumor MRI classification web application. It allows users to upload MRI images, sends them to a calibrated PyTorch model service for inference, stores the scan and prediction result in Supabase, and displays saved analysis history in a repository page.
 
-The current application separates the web interface from model inference:
+The production architecture separates the web interface, model runtime, and storage layer:
 
-- **Astro** handles the frontend, server routes, upload workflow, and repository UI.
-- **FastAPI** serves the PyTorch EfficientNet-B0 model through a local prediction endpoint.
-- **Supabase** stores uploaded MRI files and prediction records.
+- **Vercel** hosts the Astro web application and server API routes.
+- **Railway** hosts the FastAPI model service that loads the PyTorch EfficientNet-B0 bundle.
+- **Supabase** provides Postgres records plus S3-compatible Storage buckets for uploaded scans and model artifact delivery.
+
+In short: users interact with the Vercel-hosted web app, the app calls the Railway-hosted model service for inference, and Supabase persists both MRI scan files and analysis metadata.
 
 **Primary capabilities:**
 
@@ -72,17 +76,26 @@ The current application separates the web interface from model inference:
 | Layer          | Technology           | Version | Purpose                                |
 | :------------- | :------------------- | :------ | :------------------------------------- |
 | Framework      | Astro                | 5.x     | Web app, pages, server-rendered routes |
-| Server Adapter | `@astrojs/node`      | 9.x     | Runtime support for API routes         |
+| Server Adapter | `@astrojs/vercel`    | 9.x     | Vercel serverless output for API routes |
 | Language       | TypeScript           | 5.x     | Frontend and API route logic           |
 | Styling        | Tailwind CSS / CSS   | 4.x     | UI styling and responsive layouts      |
 | Icons          | astro-icon / Iconify | Latest  | Interface icons                        |
+
+### Deployment
+
+| Layer | Platform | Purpose |
+| :---- | :------- | :------ |
+| Web App | Vercel | Hosts Astro pages, static assets, and `/api/*` server routes |
+| Model API | Railway | Hosts FastAPI, PyTorch, and the EfficientNet-B0 model runtime |
+| Database | Supabase | Stores `tumor_analyses` records |
+| File Storage | Supabase Storage / S3-compatible bucket | Stores MRI uploads and hosts the deployable model bundle |
 
 ### Backend and Storage
 
 | Layer          | Technology              | Purpose                                               |
 | :------------- | :---------------------- | :---------------------------------------------------- |
 | Database       | Supabase Postgres       | Stores analysis metadata and prediction results       |
-| Object Storage | Supabase Storage        | Stores uploaded MRI scans in the `brain-scans` bucket |
+| Object Storage | Supabase Storage / S3-compatible buckets | Stores uploaded MRI scans and model artifacts |
 | Client SDK     | `@supabase/supabase-js` | Server-side storage and database operations           |
 | Security       | RLS Policies            | Controls access to analysis records                   |
 
@@ -104,17 +117,18 @@ The current application separates the web interface from model inference:
 Upload MRI Image (PNG / JPG)
          |
          v
-Astro Demo Page
+Astro Demo Page on Vercel
          |
          v
 POST /api/analyze
          |
-         |-- Upload original scan to Supabase Storage
+         |-- Upload original scan to Supabase Storage bucket: brain-scans
          |
-         |-- Send image to FastAPI /predict
+         |-- Send image to Railway FastAPI /predict
          v
-PyTorch Model Service
+Railway PyTorch Model Service
          |
+         |-- Download model bundle from Supabase model_artifacts bucket if needed
          |-- Preprocess image as 224 x 224 RGB tensor
          |-- Run EfficientNet-B0 inference
          |-- Apply temperature calibration
@@ -130,6 +144,36 @@ Analysis Result Modal
          v
 Repository Page
 Reads saved records from Supabase
+```
+
+### Deployment Architecture
+
+```txt
+Browser
+  |
+  v
+Vercel: Astro Web App
+  |-- serves UI pages: /, /demo, /repository, /resources
+  |-- runs server routes: /api/analyze and /api/analyses
+  |
+  |-- stores MRI file --------------------------.
+  |                                             v
+  |                                  Supabase Storage
+  |                                  - brain-scans bucket
+  |                                  - model_artifacts bucket
+  |
+  |-- calls model inference --------------------.
+                                                v
+                                      Railway: FastAPI Service
+                                      - PyTorch EfficientNet-B0
+                                      - cerebrasense_improved_bundle.pt
+                                      - /health
+                                      - /predict
+
+Supabase Postgres
+  - tumor_analyses table
+  - prediction metadata
+  - probabilities JSON
 ```
 
 ---
@@ -338,6 +382,7 @@ This creates:
 - `tumor_analyses` table
 - Row Level Security setup
 - `brain-scans` private Storage bucket
+- `model_artifacts` bucket for the deployed model bundle
 
 ### Model Artifacts
 
@@ -348,6 +393,14 @@ model-service/models/cerebrasense_improved_bundle.pt
 ```
 
 The active model service loads the filename expected by `model-service/app/model.py`. Restart the FastAPI service after replacing or updating model files.
+
+For Railway deployment, the service can also download the model bundle from Supabase Storage using:
+
+```env
+MODEL_BUNDLE_URL=https://your-project.supabase.co/storage/v1/object/public/model_artifacts/cerebrasense_improved_bundle.pt
+```
+
+This avoids relying on Git LFS during container builds.
 
 ### Run Locally
 
@@ -383,6 +436,7 @@ Create a `.env` or `.env.local` file in the project root:
 | `SUPABASE_SECRET_KEY`             | Yes      | Server-side Supabase secret or service role key                    |
 | `MODEL_API_URL`                   | Yes      | FastAPI model service URL                                          |
 | `MODEL_API_TOKEN`                 | No       | Optional shared token if model-service auth enforcement is enabled |
+| `MODEL_BUNDLE_URL`                | Railway  | Direct Supabase Storage URL for `cerebrasense_improved_bundle.pt`  |
 
 ```dotenv
 # Supabase
@@ -393,9 +447,19 @@ SUPABASE_SECRET_KEY=your-server-secret-key
 # Model service
 MODEL_API_URL=http://127.0.0.1:8000
 MODEL_API_TOKEN=dev-secret-token
+
+# Railway model bundle download
+MODEL_BUNDLE_URL=https://your-project.supabase.co/storage/v1/object/public/model_artifacts/cerebrasense_improved_bundle.pt
 ```
 
 Never commit real environment values.
+
+Production environment placement:
+
+| Platform | Variables |
+| :------- | :-------- |
+| Vercel | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `MODEL_API_URL`, `MODEL_API_TOKEN` |
+| Railway | `MODEL_BUNDLE_URL`, `MODEL_API_TOKEN` if token enforcement is enabled |
 
 ---
 
@@ -550,13 +614,16 @@ Key fields:
 | `status`            | Analysis status                       |
 | `error_message`     | Optional failure message              |
 
-Storage bucket:
+Storage buckets:
 
 ```txt
 brain-scans
+model_artifacts
 ```
 
-The bucket is private. The repository page uses signed URLs to display saved MRI previews.
+The `brain-scans` bucket stores uploaded MRI files and is treated as private. The repository page uses signed URLs to display saved MRI previews.
+
+The `model_artifacts` bucket stores the production model bundle used by Railway. The deployed model service downloads `cerebrasense_improved_bundle.pt` from this bucket when the file is missing or when the Git checkout contains only a Git LFS pointer.
 
 > Note: `display_label`, `is_uncertain`, and `confidence_threshold` are returned immediately by `/api/analyze` from the model response. The current database schema persists the core prediction fields listed above.
 
@@ -612,6 +679,16 @@ model-service/models/metadata.pkl1
 ```
 
 Do not commit `.pt`, `.pkl`, `.pkl1`, or local model `.json` files unless the project intentionally moves to Git LFS or external model hosting.
+
+Current deployment uses Supabase Storage for model delivery:
+
+```txt
+Supabase Storage bucket: model_artifacts
+Railway env var: MODEL_BUNDLE_URL
+Railway runtime path: /app/models/cerebrasense_improved_bundle.pt
+```
+
+The Railway service downloads the bundle during startup if needed, then loads it with PyTorch.
 
 ---
 
