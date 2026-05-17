@@ -78,6 +78,54 @@ import Sectionhead from "@/components/sectionhead.astro";
     </section>
 
     <section>
+      <h2>Current Technology Stack</h2>
+      <p>
+        The latest CerebraSense version separates the user interface, model
+        service, storage layer, and notebook training pipeline. This keeps the
+        improved model reproducible while allowing the web application to call
+        the calibrated classifier through a small local API.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Technologies</th>
+              <th>Role in the System</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Web Application</td>
+              <td>Astro 5, TypeScript, Tailwind CSS, astro-icon, astro-seo</td>
+              <td>Pages, upload workflow, modal result display, repository UI, and SEO metadata</td>
+            </tr>
+            <tr>
+              <td>Model Service</td>
+              <td>FastAPI, Uvicorn, PyTorch, torchvision, Pillow</td>
+              <td>Receives MRI files, preprocesses them as 224 x 224 RGB tensors, and runs inference</td>
+            </tr>
+            <tr>
+              <td>Model Development</td>
+              <td>Python, EfficientNet-B0, NumPy, scikit-learn, pandas, Matplotlib</td>
+              <td>Training notebook, evaluation reports, calibration, and artifact export</td>
+            </tr>
+            <tr>
+              <td>Persistence</td>
+              <td>Supabase Postgres, Supabase Storage, supabase-js</td>
+              <td>Stores uploaded scans, probabilities, confidence scores, and analysis records</td>
+            </tr>
+            <tr>
+              <td>Deployment Artifacts</td>
+              <td><code>cerebrasense_improved_bundle.pt</code>, <code>preprocess_config.json</code></td>
+              <td>Keeps model weights, class order, preprocessing, calibration, and threshold settings together</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
       <h2>Dataset & Preprocessing</h2>
       <p>
         The project still uses the Brain Tumor MRI Dataset by Masoud

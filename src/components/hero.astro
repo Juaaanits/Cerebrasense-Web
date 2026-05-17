@@ -11,19 +11,19 @@ const libraryImageExists = existsSync(fileURLToPath(new URL("../../public/mobile
 ---
 
 <main
-  class="grid lg:grid-cols-2 place-items-center pt-16 pb-8 md:pt-12 md:pb-24">
-  <div class="py-6 md:order-1 hidden md:block">
-    <div class="relative mx-auto flex items-end justify-center gap-6 xl:gap-8">
-      <div class="relative h-[520px] w-[250px] rounded-[2.8rem] border-[7px] border-white bg-neutral-950 p-3 shadow-2xl">
-        <div class="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-full bg-neutral-900"></div>
+  class="grid w-full min-w-0 items-center gap-10 overflow-hidden pt-10 pb-8 md:pt-12 md:pb-20 lg:grid-cols-2 lg:gap-12">
+  <div class="hidden w-full min-w-0 py-6 md:order-1 md:block">
+    <div class="relative mx-auto flex items-end justify-center gap-4 xl:gap-6">
+      <div class="relative h-[430px] w-[206px] rounded-[2.25rem] border-[6px] border-white bg-neutral-950 p-2.5 shadow-2xl xl:h-[500px] xl:w-[240px] xl:rounded-[2.7rem] xl:border-[7px] xl:p-3">
+        <div class="absolute left-1/2 top-2.5 h-5 w-24 -translate-x-1/2 rounded-full bg-neutral-900 xl:top-3 xl:h-6 xl:w-28"></div>
         {
           splashImageExists ? (
             <img
               src={splashImage}
               alt="Mobile app splash screen"
-              class="h-full w-full rounded-[2.2rem] object-cover" />
+              class="h-full w-full rounded-[1.75rem] object-cover xl:rounded-[2.2rem]" />
           ) : (
-            <div class="flex h-full items-center justify-center rounded-[2.2rem] border-2 border-dashed border-white/15 bg-[linear-gradient(180deg,_#0f172a_0%,_#312e81_100%)] p-8 text-center">
+            <div class="flex h-full items-center justify-center rounded-[1.75rem] border-2 border-dashed border-white/15 bg-[linear-gradient(180deg,_#0f172a_0%,_#312e81_100%)] p-6 text-center xl:rounded-[2.2rem] xl:p-8">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
                   Splash Screen
@@ -39,16 +39,16 @@ const libraryImageExists = existsSync(fileURLToPath(new URL("../../public/mobile
         }
       </div>
 
-      <div class="relative h-[520px] w-[250px] rounded-[2.8rem] border-[7px] border-white bg-neutral-950 p-3 shadow-2xl">
-        <div class="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-full bg-neutral-900"></div>
+      <div class="relative h-[430px] w-[206px] rounded-[2.25rem] border-[6px] border-white bg-neutral-950 p-2.5 shadow-2xl xl:h-[500px] xl:w-[240px] xl:rounded-[2.7rem] xl:border-[7px] xl:p-3">
+        <div class="absolute left-1/2 top-2.5 h-5 w-24 -translate-x-1/2 rounded-full bg-neutral-900 xl:top-3 xl:h-6 xl:w-28"></div>
         {
           libraryImageExists ? (
             <img
               src={libraryImage}
               alt="Mobile app repository screen"
-              class="h-full w-full rounded-[2.2rem] object-cover" />
+              class="h-full w-full rounded-[1.75rem] object-cover xl:rounded-[2.2rem]" />
           ) : (
-            <div class="flex h-full items-center justify-center rounded-[2.2rem] border-2 border-dashed border-white/15 bg-black p-8 text-center">
+            <div class="flex h-full items-center justify-center rounded-[1.75rem] border-2 border-dashed border-white/15 bg-black p-6 text-center xl:rounded-[2.2rem] xl:p-8">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
                   Repository Screen
@@ -65,36 +65,35 @@ const libraryImageExists = existsSync(fileURLToPath(new URL("../../public/mobile
       </div>
     </div>
   </div>
-  <div>
-    <h1 class="text-5xl lg:text-6xl xl:text-7xl font-bold lg:tracking-tight xl:tracking-tighter">
-      Intelligent MRI Analysis, Powered by CerebraSense
+  <div class="w-full min-w-0 max-w-2xl">
+    <h1 class="max-w-3xl break-words text-3xl font-bold leading-[1.08] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl lg:tracking-tight">
+      Deep Learning MRI Analysis, Powered by CerebraSense
     </h1>
-    <p class="text-lg mt-4 text-slate-600 max-w-xl">
-      Automated, internally validated classification of gliomas, meningiomas, and 
-      pituitary tumors. CerebraSense leverages a custom-built CNN architecture 
-      optimized for accuracy and site-generalization, providing a robust baseline 
-      for next-generation diagnostic support.
+    <p class="mt-4 max-w-xl break-words text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+      CerebraSense now uses the improved notebook pipeline: an EfficientNet-B0
+      transfer-learning model trained from MRI image folders with 224 x 224 RGB
+      preprocessing, augmentation, macro-F1 checkpointing, confidence
+      calibration, and uncertainty handling across glioma, meningioma, no tumor,
+      and pituitary classes.
     </p>
-    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
       <Link
-        href="#"
-        href="https://web3templates.com/templates/astroship-starter-website-template-for-astro"
-        target="_blank"
-        class="flex gap-1 items-center justify-center"
+        href="/demo"
+        class="flex w-full items-center justify-center gap-2 text-sm font-semibold sm:w-auto sm:text-base"
         rel="noopener">
-        <Icon class="text-white w-5 h-5" name="bx:bxs-cloud-download" />
+        <Icon class="h-4 w-4 shrink-0 text-white sm:h-5 sm:w-5" name="bx:bxs-brain" />
 
-        Download for Free
+        Analyze MRI
       </Link>
       <Link
         size="lg"
         style="outline"
         rel="noopener"
-        href="https://github.com/surjithctly/astroship"
-        class="flex gap-1 items-center justify-center"
-        target="_blank">
-        <Icon class="text-black w-4 h-4" name="bx:bxl-github" />
-        GitHub Repo
+        href="/development"
+        class="flex w-full items-center justify-center gap-2 text-sm font-semibold sm:w-auto sm:text-base"
+      >
+        <Icon class="h-4 w-4 shrink-0 text-black" name="bx:bxs-book-open" />
+        Development Docs
       </Link>
     </div>
   </div>

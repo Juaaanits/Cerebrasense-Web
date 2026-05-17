@@ -1,19 +1,19 @@
 <div align="center">
 
-  # CerebraSense
+# CerebraSense
 
-  **AI-Assisted Brain Tumor MRI Classification Web App**
+**Deep Learning-based Brain Tumor MRI Classification Web Application**
 
-  <img src="public/opengraph.jpg" alt="CerebraSense Preview" width="700">
+  <img src="public/logo.svg" alt="CerebraSense Logo" width="220">
 
 ---
 
-  ![Astro](https://img.shields.io/badge/Astro-5-FF5D01?style=for-the-badge&logo=astro&logoColor=white)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-  ![Supabase](https://img.shields.io/badge/Supabase-Postgres_Storage-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-  ![FastAPI](https://img.shields.io/badge/FastAPI-Model_Service-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-  ![PyTorch](https://img.shields.io/badge/PyTorch-Inference-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
-  ![License](https://img.shields.io/badge/License-GPL--2.0-red?style=for-the-badge)
+![Astro](https://img.shields.io/badge/Astro-5-FF5D01?style=for-the-badge&logo=astro&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres_Storage-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Model_Service-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EfficientNet_B0-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+![License](https://img.shields.io/badge/License-GPL--2.0-red?style=for-the-badge)
 
 </div>
 
@@ -41,12 +41,12 @@
 
 ## Overview
 
-CerebraSense is an AI-assisted brain tumor MRI classification web application. It allows users to upload MRI images, sends them to a PyTorch model service for inference, stores the scan and prediction result in Supabase, and displays saved analysis history in a repository page.
+CerebraSense is an deep learning model-powered brain tumor MRI classification web application. It allows users to upload MRI images, sends them to a calibrated PyTorch model service for inference, stores the scan and prediction result in Supabase, and displays saved analysis history in a repository page.
 
 The current application separates the web interface from model inference:
 
 - **Astro** handles the frontend, server routes, upload workflow, and repository UI.
-- **FastAPI** serves the PyTorch model through a local prediction endpoint.
+- **FastAPI** serves the PyTorch EfficientNet-B0 model through a local prediction endpoint.
 - **Supabase** stores uploaded MRI files and prediction records.
 
 **Primary capabilities:**
@@ -54,11 +54,12 @@ The current application separates the web interface from model inference:
 - Upload MRI images in PNG or JPG format
 - Preview uploaded scans before and after analysis
 - Classify scans into glioma, meningioma, no tumor, or pituitary classes
-- Display class probabilities and calibrated prediction details
+- Display class probabilities, calibrated confidence, model version, and uncertainty status
 - Store scan files in Supabase Storage
 - Store analysis records in Supabase Postgres
 - Render repository records from saved Supabase data
 - Provide class-specific educational insights for each prediction type
+- Provide updated development documentation for the improved model pipeline
 
 > Important: CerebraSense is a research and educational prototype. It is not a clinical diagnosis tool and should not replace professional medical review.
 
@@ -68,32 +69,32 @@ The current application separates the web interface from model inference:
 
 ### Web Application
 
-| Layer | Technology | Version | Purpose |
-|:------|:-----------|:--------|:--------|
-| Framework | Astro | 5.x | Web app, pages, server-rendered routes |
-| Server Adapter | `@astrojs/node` | 9.x | Runtime support for API routes |
-| Language | TypeScript | 5.x | Frontend and API route logic |
-| Styling | Tailwind CSS / CSS | 4.x | UI styling and responsive layouts |
-| Icons | astro-icon / Iconify | Latest | Interface icons |
+| Layer          | Technology           | Version | Purpose                                |
+| :------------- | :------------------- | :------ | :------------------------------------- |
+| Framework      | Astro                | 5.x     | Web app, pages, server-rendered routes |
+| Server Adapter | `@astrojs/node`      | 9.x     | Runtime support for API routes         |
+| Language       | TypeScript           | 5.x     | Frontend and API route logic           |
+| Styling        | Tailwind CSS / CSS   | 4.x     | UI styling and responsive layouts      |
+| Icons          | astro-icon / Iconify | Latest  | Interface icons                        |
 
 ### Backend and Storage
 
-| Layer | Technology | Purpose |
-|:------|:-----------|:--------|
-| Database | Supabase Postgres | Stores analysis metadata and prediction results |
-| Object Storage | Supabase Storage | Stores uploaded MRI scans in the `brain-scans` bucket |
-| Client SDK | `@supabase/supabase-js` | Server-side storage and database operations |
-| Security | RLS Policies | Controls access to analysis records |
+| Layer          | Technology              | Purpose                                               |
+| :------------- | :---------------------- | :---------------------------------------------------- |
+| Database       | Supabase Postgres       | Stores analysis metadata and prediction results       |
+| Object Storage | Supabase Storage        | Stores uploaded MRI scans in the `brain-scans` bucket |
+| Client SDK     | `@supabase/supabase-js` | Server-side storage and database operations           |
+| Security       | RLS Policies            | Controls access to analysis records                   |
 
 ### Model Service
 
-| Layer | Technology | Purpose |
-|:------|:-----------|:--------|
-| API Framework | FastAPI | Serves model inference endpoint |
-| ASGI Server | Uvicorn | Runs the local model service |
-| ML Framework | PyTorch | Loads and runs the brain tumor classifier |
-| Vision Utilities | torchvision / Pillow | Image model support and image preprocessing |
-| Data Utilities | NumPy / scikit-learn | Tensor preparation and scaler support |
+| Layer            | Technology           | Purpose                                                   |
+| :--------------- | :------------------- | :-------------------------------------------------------- |
+| API Framework    | FastAPI              | Serves model inference endpoint                           |
+| ASGI Server      | Uvicorn              | Runs the local model service                              |
+| ML Framework     | PyTorch              | Loads and runs the EfficientNet-B0 brain tumor classifier |
+| Vision Utilities | torchvision / Pillow | EfficientNet support and image preprocessing              |
+| Data Utilities   | NumPy / scikit-learn | Numerical utilities and legacy artifact compatibility     |
 
 ---
 
@@ -114,13 +115,15 @@ POST /api/analyze
          v
 PyTorch Model Service
          |
-         |-- Preprocess image
-         |-- Run model inference
-         |-- Return predicted label + probabilities
+         |-- Preprocess image as 224 x 224 RGB tensor
+         |-- Run EfficientNet-B0 inference
+         |-- Apply temperature calibration
+         |-- Return predicted label + probabilities + uncertainty status
          v
 Astro API Route
          |
-         |-- Insert result into tumor_analyses
+         |-- Insert core result into tumor_analyses
+         |-- Return saved record with model response metadata
          v
 Analysis Result Modal
          |
@@ -135,58 +138,60 @@ Reads saved records from Supabase
 
 ```txt
 cerebrasense-web/
-├── astro.config.mjs              # Astro server configuration
-├── package.json                  # Node dependencies and scripts
-├── tsconfig.json                 # TypeScript config and path aliases
-├── README.md                     # Project documentation
-├── .env                          # Local environment variables (ignored)
-├── .gitignore                    # Git ignore rules
-│
-├── public/
-│   ├── favicon.svg
-│   ├── opengraph.jpg
-│   ├── profile.png
-│   └── samples/
-│
-├── src/
-│   ├── components/
-│   │   ├── repository.astro      # Supabase-backed repository UI
-│   │   └── docs.astro            # Development documentation content
-│   │
-│   ├── layouts/
-│   │   └── Layout.astro
-│   │
-│   ├── lib/
-│   │   └── supabase/
-│   │       ├── client.ts         # Browser Supabase client
-│   │       └── server.ts         # Server/admin Supabase client
-│   │
-│   ├── pages/
-│   │   ├── api/
-│   │   │   ├── analyze.ts        # Upload, infer, save analysis
-│   │   │   └── analyses.ts       # List saved analyses
-│   │   ├── demo.astro            # MRI upload and analysis page
-│   │   ├── repository.astro      # Saved analysis records
-│   │   ├── resources.astro       # Setup and stack notes
-│   │   └── types/
-│   │       └── analysis.ts       # Shared analysis types
-│   │
-│   └── styles/
-│       └── global.css
-│
-├── model-service/
-│   ├── requirements.txt          # Python dependencies
-│   ├── app/
-│   │   ├── main.py               # FastAPI app and /predict endpoint
-│   │   ├── model.py              # PyTorch model loading
-│   │   ├── preprocess.py         # Image preprocessing
-│   │   └── schemas.py            # Response schemas
-│   │
-│   └── models/
-│       └── local model artifacts # Ignored by Git
-│
-└── supabase/
-    └── schema.sql                # Table, bucket, and RLS setup
+|-- astro.config.mjs              # Astro server configuration
+|-- package.json                  # Node dependencies and scripts
+|-- tsconfig.json                 # TypeScript config and path aliases
+|-- README.md                     # Project documentation
+|-- .env                          # Local environment variables (ignored)
+|-- .gitignore                    # Git ignore rules
+|
+|-- public/
+|   |-- logo.svg                 # Browser tab icon and README logo
+|   |-- logo.png                 # Source logo image
+|   |-- opengraph.jpg
+|   |-- profile.png
+|   `-- samples/
+|
+|-- src/
+|   |-- components/
+|   |   |-- repository.astro      # Supabase-backed repository UI
+|   |   `-- docs.astro            # /development documentation content
+|   |
+|   |-- layouts/
+|   |   `-- Layout.astro
+|   |
+|   |-- lib/
+|   |   `-- supabase/
+|   |       |-- client.ts         # Browser Supabase client
+|   |       `-- server.ts         # Server/admin Supabase client
+|   |
+|   |-- pages/
+|   |   |-- api/
+|   |   |   |-- analyze.ts        # Upload, infer, save analysis
+|   |   |   `-- analyses.ts       # List saved analyses
+|   |   |-- demo.astro            # MRI upload and analysis page
+|   |   |-- development.astro     # Improved model development docs
+|   |   |-- repository.astro      # Saved analysis records
+|   |   |-- resources.astro       # Setup and stack notes
+|   |   `-- types/
+|   |       `-- analysis.ts       # Shared analysis types
+|   |
+|   `-- styles/
+|       `-- global.css
+|
+|-- model-service/
+|   |-- requirements.txt          # Python dependencies
+|   |-- app/
+|   |   |-- main.py               # FastAPI app and /predict endpoint
+|   |   |-- model.py              # EfficientNet bundle loading
+|   |   |-- preprocess.py         # 224 x 224 RGB preprocessing
+|   |   `-- schemas.py            # Response schemas
+|   |
+|   `-- models/
+|       `-- local model artifacts # Ignored by Git
+|
+`-- supabase/
+    `-- schema.sql                # Table, bucket, and RLS setup
 ```
 
 ---
@@ -206,19 +211,31 @@ cerebrasense-web/
 - FastAPI receives uploaded MRI images
 - PyTorch model returns:
   - predicted class
-  - confidence score
+  - display label
+  - calibrated confidence score
   - class probability distribution
   - model version
+  - uncertainty status
+  - confidence threshold
 - Supported classes:
   - **Glioma**
   - **Meningioma**
   - **No Tumor**
   - **Pituitary**
 
+### Improved Model Pipeline
+
+- EfficientNet-B0 transfer-learning classifier
+- 224 x 224 RGB input preprocessing
+- ImageNet normalization
+- Temperature-scaled confidence calibration
+- 70% confidence threshold for uncertain predictions
+- Deployment bundle keeps weights, class order, preprocessing config, temperature, and threshold together
+
 ### Supabase Persistence
 
 - Original uploaded MRI image is saved to Supabase Storage
-- Analysis metadata is saved to Supabase Postgres
+- Core analysis metadata is saved to Supabase Postgres
 - Repository page reads saved records from Supabase
 - Private bucket access uses signed image URLs
 
@@ -228,6 +245,11 @@ cerebrasense-web/
 - Filtering by prediction class
 - Detail modal with confidence bars
 - Class-specific educational insight content for glioma, meningioma, pituitary, and no tumor results
+- Label normalization prevents `No Tumor`, `notumor`, and `no_tumor` from routing to the wrong insight content
+
+### Development Documentation
+
+The `/development` route documents the improved training pipeline, final metrics, calibration, deployment artifacts, and web integration changes.
 
 ### Health Endpoint
 
@@ -237,7 +259,7 @@ The model service exposes:
 GET /health
 ```
 
-This confirms the FastAPI service and model version are available.
+This confirms the FastAPI service, deployed model version, active architecture, input size, and confidence threshold are available.
 
 ---
 
@@ -254,7 +276,7 @@ This confirms the FastAPI service and model version are available.
       <td align="center" width="50%">
         <strong>2. Analysis Result</strong><br>
         <img src="public/opengraph.jpg" alt="CerebraSense Analysis Result" width="100%"><br>
-        <sub>Prediction modal with uploaded image preview and class probabilities.</sub>
+        <sub>Prediction modal with uploaded image preview, calibrated class probabilities, and uncertainty notice when needed.</sub>
       </td>
     </tr>
     <tr>
@@ -264,9 +286,9 @@ This confirms the FastAPI service and model version are available.
         <sub>Saved Supabase analysis records with class filtering.</sub>
       </td>
       <td align="center" width="50%">
-        <strong>4. Insight Detail</strong><br>
-        <img src="public/opengraph.jpg" alt="CerebraSense Insight Detail" width="100%"><br>
-        <sub>Class-specific educational insights and confidence breakdown.</sub>
+        <strong>4. Development Docs</strong><br>
+        <img src="public/opengraph.jpg" alt="CerebraSense Development Documentation" width="100%"><br>
+        <sub>Improved model pipeline, evaluation metrics, and deployment notes.</sub>
       </td>
     </tr>
   </table>
@@ -319,13 +341,13 @@ This creates:
 
 ### Model Artifacts
 
-Place the required model files inside:
+Place the active model bundle inside:
 
 ```txt
-model-service/models/
+model-service/models/cerebrasense_improved_bundle.pt
 ```
 
-The active model service must have the artifact filenames expected by `model-service/app/model.py`.
+The active model service loads the filename expected by `model-service/app/model.py`. Restart the FastAPI service after replacing or updating model files.
 
 ### Run Locally
 
@@ -354,13 +376,13 @@ http://localhost:4321/demo
 
 Create a `.env` or `.env.local` file in the project root:
 
-| Variable | Required | Description |
-|:---------|:---------|:------------|
-| `PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
-| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Browser-safe Supabase publishable key |
-| `SUPABASE_SECRET_KEY` | Yes | Server-side Supabase secret or service role key |
-| `MODEL_API_URL` | Yes | FastAPI model service URL |
-| `MODEL_API_TOKEN` | No | Shared token for model service requests |
+| Variable                          | Required | Description                                                        |
+| :-------------------------------- | :------- | :----------------------------------------------------------------- |
+| `PUBLIC_SUPABASE_URL`             | Yes      | Supabase project URL                                               |
+| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes      | Browser-safe Supabase publishable key                              |
+| `SUPABASE_SECRET_KEY`             | Yes      | Server-side Supabase secret or service role key                    |
+| `MODEL_API_URL`                   | Yes      | FastAPI model service URL                                          |
+| `MODEL_API_TOKEN`                 | No       | Optional shared token if model-service auth enforcement is enabled |
 
 ```dotenv
 # Supabase
@@ -379,14 +401,14 @@ Never commit real environment values.
 
 ## Available Scripts
 
-| Command | Description |
-|:--------|:------------|
-| `npm run dev` | Start Astro development server on port 4321 |
-| `npm run build` | Build the Astro server app |
-| `npm run preview` | Preview the production build |
-| `npm run astro` | Run Astro CLI commands |
+| Command                                     | Description                                       |
+| :------------------------------------------ | :------------------------------------------------ |
+| `npm run dev`                               | Start Astro development server on port 4321       |
+| `npm run build`                             | Build the Astro server app                        |
+| `npm run preview`                           | Preview the production build                      |
+| `npm run astro`                             | Run Astro CLI commands                            |
 | `uvicorn app.main:app --reload --port 8000` | Start FastAPI model service from `model-service/` |
-| `pip install -r requirements.txt` | Install model-service Python dependencies |
+| `pip install -r requirements.txt`           | Install model-service Python dependencies         |
 
 ---
 
@@ -394,7 +416,7 @@ Never commit real environment values.
 
 ### `POST /api/analyze`
 
-Accepts an MRI image upload, stores the image, runs model inference, saves the analysis record, and returns the saved result.
+Accepts an MRI image upload, stores the image, runs model inference, saves the core analysis record, and returns the saved result with the latest model response metadata.
 
 **Request:**
 
@@ -411,16 +433,19 @@ Body: scan=<file>
     "id": "uuid",
     "created_at": "2026-05-16T00:00:00.000Z",
     "image_path": "anonymous/uuid.jpg",
-    "original_filename": "Te-gl_0285.jpg",
+    "original_filename": "Te-gl_0010.jpg",
     "predicted_label": "glioma",
-    "confidence": 72.7,
+    "display_label": "Glioma",
+    "confidence": 99.58,
     "probabilities": {
-      "glioma": 72.7,
-      "notumor": 5.1,
-      "pituitary": 4.8,
-      "meningioma": 17.4
+      "glioma": 99.58,
+      "meningioma": 0.03,
+      "notumor": 0.12,
+      "pituitary": 0.27
     },
-    "model_version": "cnn-label-smoothing-v1",
+    "model_version": "efficientnet-b0-transfer-calibrated-v1",
+    "is_uncertain": false,
+    "confidence_threshold": 70.0,
     "status": "completed"
   }
 }
@@ -440,6 +465,13 @@ Returns saved analysis records from Supabase with signed image URLs.
       "original_filename": "Te-no_0012.jpg",
       "predicted_label": "notumor",
       "confidence": 90.4,
+      "probabilities": {
+        "glioma": 2.7,
+        "meningioma": 3.3,
+        "notumor": 90.4,
+        "pituitary": 3.5
+      },
+      "model_version": "efficientnet-b0-transfer-calibrated-v1",
       "image_url": "https://signed-supabase-url"
     }
   ]
@@ -455,7 +487,10 @@ FastAPI model-service health check.
 ```json
 {
   "status": "ok",
-  "model_version": "cnn-label-smoothing-v1"
+  "model_version": "efficientnet-b0-transfer-calibrated-v1",
+  "model_name": "efficientnet_b0",
+  "image_size": 224,
+  "confidence_threshold": 0.7
 }
 ```
 
@@ -475,14 +510,17 @@ Body: file=<image>
 ```json
 {
   "predicted_label": "glioma",
-  "confidence": 72.7,
+  "display_label": "Glioma",
+  "confidence": 99.58,
   "probabilities": {
-    "glioma": 72.7,
-    "notumor": 5.1,
-    "pituitary": 4.8,
-    "meningioma": 17.4
+    "glioma": 99.58,
+    "meningioma": 0.03,
+    "notumor": 0.12,
+    "pituitary": 0.27
   },
-  "model_version": "cnn-label-smoothing-v1"
+  "model_version": "efficientnet-b0-transfer-calibrated-v1",
+  "is_uncertain": false,
+  "confidence_threshold": 70.0
 }
 ```
 
@@ -498,19 +536,19 @@ public.tumor_analyses
 
 Key fields:
 
-| Column | Purpose |
-|:-------|:--------|
-| `id` | Analysis record UUID |
-| `created_at` | Timestamp of analysis |
-| `user_id` | Optional Supabase Auth user reference |
-| `image_path` | Path in the `brain-scans` bucket |
-| `original_filename` | Uploaded filename |
-| `predicted_label` | Model prediction |
-| `confidence` | Confidence percentage |
-| `probabilities` | JSON object of class probabilities |
-| `model_version` | Deployed model version |
-| `status` | Analysis status |
-| `error_message` | Optional failure message |
+| Column              | Purpose                               |
+| :------------------ | :------------------------------------ |
+| `id`                | Analysis record UUID                  |
+| `created_at`        | Timestamp of analysis                 |
+| `user_id`           | Optional Supabase Auth user reference |
+| `image_path`        | Path in the `brain-scans` bucket      |
+| `original_filename` | Uploaded filename                     |
+| `predicted_label`   | Model prediction                      |
+| `confidence`        | Confidence percentage                 |
+| `probabilities`     | JSON object of class probabilities    |
+| `model_version`     | Deployed model version                |
+| `status`            | Analysis status                       |
+| `error_message`     | Optional failure message              |
 
 Storage bucket:
 
@@ -519,6 +557,8 @@ brain-scans
 ```
 
 The bucket is private. The repository page uses signed URLs to display saved MRI previews.
+
+> Note: `display_label`, `is_uncertain`, and `confidence_threshold` are returned immediately by `/api/analyze` from the model response. The current database schema persists the core prediction fields listed above.
 
 ---
 
@@ -532,7 +572,38 @@ Expected local path:
 model-service/models/
 ```
 
-Example artifact set:
+Active artifact set:
+
+```txt
+model-service/models/cerebrasense_improved_bundle.pt
+model-service/models/preprocess_config.json
+```
+
+The bundle contains:
+
+- EfficientNet-B0 model weights
+- class order
+- display labels
+- input size
+- ImageNet normalization settings
+- learned temperature value
+- confidence threshold
+- training configuration metadata
+
+Current deployed model:
+
+| Field                       | Value                                    |
+| :-------------------------- | :--------------------------------------- |
+| Model version               | `efficientnet-b0-transfer-calibrated-v1` |
+| Architecture                | EfficientNet-B0                          |
+| Input size                  | 224 x 224                                |
+| Test accuracy               | 98.93%                                   |
+| Test macro F1               | 98.89%                                   |
+| Temperature                 | 0.6293                                   |
+| Confidence threshold        | 70%                                      |
+| Accepted-only test accuracy | 99.08%                                   |
+
+Previous local artifacts may still exist for reference:
 
 ```txt
 model-service/models/cnn_model1.pt
@@ -540,9 +611,7 @@ model-service/models/scaler.pkl1
 model-service/models/metadata.pkl1
 ```
 
-or a newer bundled model file if `model-service/app/model.py` has been updated to load it.
-
-Do not commit `.pt`, `.pkl`, or `.pkl1` files unless the project intentionally moves to Git LFS or external model hosting.
+Do not commit `.pt`, `.pkl`, `.pkl1`, or local model `.json` files unless the project intentionally moves to Git LFS or external model hosting.
 
 ---
 
@@ -550,24 +619,25 @@ Do not commit `.pt`, `.pkl`, or `.pkl1` files unless the project intentionally m
 
 ### Version 2 - Product Hardening
 
-| Priority | Feature | Description |
-|:---------|:--------|:------------|
-| High | Supabase Auth | Associate analysis records with authenticated users |
-| High | Role-based Access | Restrict repository records per user or organization |
-| High | Model Artifact Hosting | Store model artifacts in a controlled release location |
-| Medium | Upload Validation | Add file size, image dimension, and corrupt-image checks |
-| Medium | Signed Preview Refresh | Refresh expired signed URLs client-side |
-| Medium | Repository Search | Search records by filename, class, or date |
-| Low | Export Records | Download analysis history as CSV or JSON |
+| Priority | Feature                      | Description                                               |
+| :------- | :--------------------------- | :-------------------------------------------------------- |
+| High     | Supabase Auth                | Associate analysis records with authenticated users       |
+| High     | Role-based Access            | Restrict repository records per user or organization      |
+| High     | Model Artifact Hosting       | Store model artifacts in a controlled release location    |
+| Medium   | Upload Validation            | Add file size, image dimension, and corrupt-image checks  |
+| Medium   | Persist Uncertainty Metadata | Store `is_uncertain` and threshold values in Postgres     |
+| Medium   | Signed Preview Refresh       | Refresh expired signed URLs client-side                   |
+| Medium   | Repository Search            | Search records by filename, class, model version, or date |
+| Low      | Export Records               | Download analysis history as CSV or JSON                  |
 
 ### Version 3 - Clinical Research Improvements
 
 - External validation on independent MRI datasets
 - Patient-level dataset splitting where identifiers are available
 - Tumor localization or heatmap visualization
-- Model calibration reporting in the UI
 - Human review workflow for uncertain predictions
 - Audit log for model version, preprocessing config, and result changes
+- Broader MRI sequence and acquisition testing before clinical-facing use
 
 ---
 
@@ -618,12 +688,12 @@ git push origin feature/your-feature-name
     <img src="https://img.shields.io/badge/EMAIL-juanitoramos113@gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email">
   </a>
 
-  <br><br>
+<br><br>
 
-  Star this repository if you find it helpful.
+Star this repository if you find it helpful.
 
-  Built by [Juanito M. Ramos II](https://github.com/Juaaanits)
+Built by [Juanito M. Ramos II](https://github.com/Juaaanits)
 
-  *Last Updated: May 2026*
+_Last Updated: May 2026_
 
 </div>
