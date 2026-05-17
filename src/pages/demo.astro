@@ -419,9 +419,16 @@ import Layout from "@/layouts/Layout.astro";
         body: formData,
       });
 
-      const result = (await response.json()) as
+      const responseText = await response.text();
+      let result: AnalysisResponse | { error?: string };
+
+      try {
+        result = JSON.parse(responseText) as
         | AnalysisResponse
         | { error?: string };
+      } catch {
+        throw new Error(responseText || "Analysis failed.");
+      }
 
       if (!response.ok || !("analysis" in result)) {
         throw new Error(result.error ?? "Analysis failed.");
