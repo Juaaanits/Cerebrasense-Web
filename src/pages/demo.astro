@@ -261,7 +261,7 @@ import Layout from "@/layouts/Layout.astro";
       labelText.textContent = formatLabel(label);
 
       const valueText = document.createElement("span");
-      valueText.textContent = `${Number(value).toFixed(1)}%`;
+      valueText.textContent = `${Number(value).toFixed(2)}%`;
 
       const track = document.createElement("div");
       track.className = "probability-track";
