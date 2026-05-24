@@ -704,6 +704,7 @@ The Railway service downloads the bundle during startup if needed, then loads it
 | High     | Role-based Access            | Restrict repository records per user or organization      |
 | High     | Model Artifact Hosting       | Store model artifacts in a controlled release location    |
 | Medium   | Upload Validation            | Add file size, image dimension, and corrupt-image checks  |
+| Medium   | Input Type Guardrails        | Detect supported MRI/tumor scan types and show a safe fallback for non-clinical or unsupported pictures |
 | Medium   | Persist Uncertainty Metadata | Store `is_uncertain` and threshold values in Postgres     |
 | Medium   | Signed Preview Refresh       | Refresh expired signed URLs client-side                   |
 | Medium   | Repository Search            | Search records by filename, class, model version, or date |
