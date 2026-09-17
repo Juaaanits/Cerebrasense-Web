@@ -1,6 +1,6 @@
 <div align="center">
 
-# CerebraSense
+# CerebraSense Cloud ML Inference Platform
 
 **Deep Learning-based Brain Tumor MRI Classification Web Application**
 
